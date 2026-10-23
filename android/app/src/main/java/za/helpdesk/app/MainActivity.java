@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
             req.addRequestHeader("User-Agent", web.getSettings().getUserAgentString());
             String name = URLUtil.guessFileName(url, contentDisposition, mimeType);
             req.setTitle(name);
-            req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETION);
+            req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);
             DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             dm.enqueue(req);
