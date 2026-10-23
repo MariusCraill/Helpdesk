@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="change_address"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/change_address">
+        <intent
+            android:action="za.helpdesk.app.CHANGE_ADDRESS"
+            android:targetClass="za.helpdesk.app.MainActivity"
+            android:targetPackage="za.helpdesk.app" />
+    </shortcut>
+</shortcuts>

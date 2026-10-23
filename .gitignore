@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.db
+access_pin.txt
+config.json
+attachments/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties

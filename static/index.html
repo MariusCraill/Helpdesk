@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Helpdesk</title>
+<meta name="theme-color" content="#2563eb"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<script>const BASE=(location.pathname.match(/^\/helpdesk(?=\/|$)/i)||[''])[0];document.write('<link rel="manifest" href="'+BASE+'/manifest.webmanifest"><link rel="icon" href="'+BASE+'/icon.svg">')</script>
+<style>
+:root{--bg:#f5f7f9;--panel:#fff;--ink:#12344d;--mut:#6b7c8c;--line:#e4e9ee;--acc:#2c5cc5;--acc2:#234aa0;--sel:#eaf2ff;--rail:#f3f5f7;--red:#d93025;--redbg:#fde8e7;--amb:#c77700;--grn:#16a34a;--note:#fff7e0;--logo:#1fa85a}
+@media(prefers-color-scheme:dark){:root{--bg:#0f151c;--panel:#161e27;--ink:#e3eaf1;--mut:#8797a7;--line:#263340;--acc:#5b8def;--acc2:#7fa6f5;--sel:#1c2c47;--rail:#121a22;--redbg:#3a1d1b;--note:#3a3216}}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#app{display:flex;height:100vh}
+#rail{width:56px;background:var(--rail);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px;flex:none}
+.logo{width:34px;height:34px;border-radius:50%;background:var(--logo);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:12px}.logo svg{stroke-width:2.2}
+#nav{display:flex;flex-direction:column;gap:6px;align-items:center}
+#rail button,#rail a{width:38px;height:38px;border-radius:8px;border:0;background:none;color:#3d566b;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+#rail button:hover,#rail a:hover{background:#e3e8ed}
+#nav button.on{background:#dfe5ea;color:var(--ink)}
+@media(prefers-color-scheme:dark){#rail button,#rail a{color:#9db0c2}#rail button:hover,#rail a:hover{background:#1e2a36}#nav button.on{background:#253343;color:#fff}}
+.railbot{margin-top:auto;display:flex;flex-direction:column;gap:6px;align-items:center}
+#shell{flex:1;min-width:0;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:0 16px;height:48px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+#crumb{font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#crumb b{color:var(--acc);font-weight:600}#crumb i{color:var(--mut);font-style:normal;margin:0 6px}#crumb span{font-weight:600}
+#meName{color:var(--mut);font-size:13px;white-space:nowrap}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:500}.btn:hover{background:var(--acc2)}
+.ico{width:16px;height:16px;vertical-align:-3px;margin-right:5px}
+.btn.sec{background:var(--panel);color:var(--ink);border:1px solid #cfd8e0;font-weight:400}.btn.sec:hover{background:var(--bg)}
+input,select,textarea{background:var(--panel);border:1px solid #cfd8e0;border-radius:6px;padding:6px 8px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid #2c5cc533;border-color:var(--acc)}
+textarea{resize:vertical;min-height:90px}label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}
+main{flex:1;min-height:0;display:flex}
+.view{display:none;flex:1;min-height:0}.view.on{display:flex}
+#list{width:340px;flex:none;overflow:auto;border-right:1px solid var(--line);background:var(--panel)}
+.lhead{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;position:sticky;top:0;background:var(--panel);z-index:2}
+.lhead svg{width:16px;height:16px;color:var(--mut)}
+#viewSel{border:0;background:none;font-weight:600;padding:4px 2px;width:auto;max-width:230px;cursor:pointer;color:var(--ink)}
+#viewSel:focus{outline:0}.cnt{margin-left:auto;color:var(--mut);font-size:12px}
+.search{padding:0 12px 10px;border-bottom:1px solid var(--line);position:sticky;top:42px;background:var(--panel);z-index:2}
+.search input{border-radius:18px;padding:7px 12px;background:var(--bg)}
+.row{display:flex;gap:10px;padding:12px 12px;border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.row:hover{background:var(--bg)}.row.on{background:var(--sel);border-left-color:var(--acc)}
+.rb{min-width:0;flex:1}
+.r1{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}.who{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.r2{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:1px 0 3px}
+.r3{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);min-width:0}.r3 svg{width:14px;height:14px}
+.r3 em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.sla{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--ink);padding:1px 6px;border-radius:10px;white-space:nowrap;flex:none}.sla svg{width:12px;height:12px}
+.sla.od{background:var(--redbg);color:var(--red)}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;font-size:14px}
+.av.sm{width:30px;height:30px;font-size:13px}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;background:var(--bg);border:1px solid var(--line)}
+.p1{color:var(--mut)}.p2{color:var(--acc)}.p3{color:var(--amb);font-weight:600}.p4{color:var(--red);font-weight:700}
+.st2{color:var(--grn)}.st3{color:var(--amb)}.st4,.st5{color:var(--mut)}
+.od{color:#fff;background:var(--red);border-color:var(--red)}
+#detail{flex:1;overflow:auto;padding:18px 24px;min-width:0}
+.empty{color:var(--mut);text-align:center;margin-top:80px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.msg{display:flex;gap:10px;margin:14px 0;white-space:pre-wrap;word-wrap:break-word}
+.mb{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
+.msg.reply .mb{border-left:3px solid var(--acc)}.msg.note .mb{background:var(--note);border-left:3px solid var(--amb)}
+.msg .h{font-size:12px;color:var(--mut);margin-bottom:5px;display:flex;justify-content:space-between;gap:8px}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button{border:1px solid var(--line);background:var(--panel);padding:4px 12px;border-radius:14px;cursor:pointer}.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.page{padding:20px 24px;overflow:auto;flex:1}table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:500;font-size:12px}
+.big{font-size:28px;font-weight:700}.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+.kpi span{color:var(--mut);font-size:12px}
+#modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:30}
+#modal.on{display:flex}#modal .box{background:var(--panel);border-radius:10px;padding:18px;width:min(520px,94vw);max-height:92vh;overflow:auto}
+#toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;display:none;z-index:40}
+code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:12px}
+.flex{display:flex;gap:8px;align-items:center}.sp{flex:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.backBtn{display:none}
+@media(max-width:820px){
+ #app{display:block;height:100dvh}
+ #rail{position:fixed;left:0;right:0;bottom:0;z-index:20;width:100%;height:56px;padding-bottom:env(safe-area-inset-bottom);box-sizing:content-box;flex-direction:row;justify-content:space-around;padding-left:4px;padding-right:4px;border-right:0;border-top:1px solid var(--line);gap:0}
+ .logo,#rail .railbot a{display:none}.railbot{margin:0;flex-direction:row}
+ #nav{flex-direction:row;gap:0;flex:1;justify-content:flex-start;overflow-x:auto;scrollbar-width:none}#nav button{flex:1 0 44px}
+ #rail button,#rail a{width:44px;height:44px}
+ #shell{height:100dvh;padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+ body:has(#v-tickets.on[data-pane=detail]) #rail{display:none}
+ body:has(#v-tickets.on[data-pane=detail]) #shell{padding-bottom:0}
+ header{padding:0 12px}#meName{display:none}
+ #newBtn{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:8;border-radius:28px;padding:14px 20px;box-shadow:0 4px 14px #0005;font-size:15px}
+ main{min-width:0;overflow-x:hidden}.view{min-width:0;width:100%;max-width:100vw}
+ #list{width:100%;flex:1;border-right:0;padding-bottom:90px}
+ #detail{width:100%;padding:12px 12px 90px;overflow-x:hidden}#detail h2{font-size:18px;min-width:0;word-break:break-word}
+ #v-tickets[data-pane=list] #detail{display:none}
+ #v-tickets[data-pane=detail] #list{display:none}
+ body:has(#v-tickets[data-pane=detail]) #newBtn{display:none}
+ .backBtn{display:inline-block}
+ input,select,textarea{font-size:16px;min-height:42px}
+ .btn,.tabs button{min-height:42px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ input,select,textarea{min-width:0;max-width:100%}
+ .flex{flex-wrap:wrap}.flex>*{min-width:0}
+ .page{padding:12px 12px 90px}.page table{display:block;overflow-x:auto}
+ #modal .box{width:100vw;height:100vh;max-height:100vh;border-radius:0;padding-bottom:40px}#toast{bottom:76px;left:12px;right:12px}
+ .row{padding:14px 12px}
+ .actions .btn{flex:1 1 45%}
+ #toast{left:12px;right:12px;bottom:130px;text-align:center}
+}
+body[data-view]:not([data-view=tickets]) #newBtn{display:none!important}
+
+.att{display:inline-block;margin:6px 6px 0 0;padding:3px 10px;border:1px solid var(--line);border-radius:14px;font-size:12px;text-decoration:none;color:var(--acc);white-space:normal;background:var(--panel)}
+.att i{color:var(--mut);font-style:normal}.att b{cursor:pointer;margin-left:6px;color:var(--mut)}
+</style></head><body>
+<div id="app">
+<aside id="rail">
+  <div class="logo" title="Helpdesk"><svg viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></svg></div>
+  <nav id="nav">
+    <button data-v="dash" title="Dashboard" aria-label="Dashboard"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4M7 16h.01M12 5v1M5 12h1M19 12h-1"/></svg></button>
+    <button data-v="tickets" class="on" title="Tickets" aria-label="Tickets"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg></button>
+    <button data-v="tasks" title="Tasks" aria-label="Tasks"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg></button>
+    <button data-v="threads" title="Team threads" aria-label="Team threads"><svg viewBox="0 0 24 24"><path d="M4 5h12v8H9l-3 3v-3H4z"/><path d="M18 9h2v8h-2v3l-3-3h-5v-2"/></svg></button>
+    <button data-v="reports" title="Reports" aria-label="Reports"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+    <button data-v="kb" title="Knowledge base" aria-label="Knowledge base"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg></button>
+    <button data-v="auto" title="Automations" aria-label="Automations"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4M9 13v1M15 13v1M3 13v2M21 13v2"/></svg></button>
+    <button data-v="canned" title="Canned replies" aria-label="Canned replies"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></button>
+    <button data-v="settings" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </nav>
+  <div class="railbot"><a href="#" id="portalLink" target="_blank" title="Customer portal" aria-label="Customer portal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></a><button id="logout" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24"><path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M16 8l4 4-4 4M20 12H9"/></svg></button></div>
+</aside>
+<div id="shell">
+<header>
+  <div id="crumb"></div><span class="sp"></span><span id="meName"></span>
+  <button class="btn" id="newBtn">+ New ticket</button>
+</header>
+<main>
+  <section class="view on" id="v-tickets" data-pane="list">
+    <div id="list"><div class="lhead"><svg viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></svg><select id="viewSel" aria-label="Ticket view"></select><span class="cnt" id="cnt"></span></div>
+      <div class="search"><input id="q" placeholder="Search subject, #id, requester…"></div><div id="rows"></div></div>
+    <div id="detail"><div class="empty">Select a ticket</div></div>
+  </section>
+  <section class="view" id="v-dash"><div class="page" id="dash"></div></section>
+  <section class="view" id="v-tasks"><div class="page" id="tasksp"></div></section>
+  <section class="view" id="v-threads"><div class="page" id="threadsp"></div></section>
+  <section class="view" id="v-reports"><div class="page" id="reportsp"></div></section>
+  <section class="view" id="v-kb"><div class="page" id="kbp"></div></section>
+  <section class="view" id="v-auto"><div class="page" id="autop"></div></section>
+  <section class="view" id="v-canned"><div class="page" id="cannedp"></div></section>
+  <section class="view" id="v-settings"><div class="page" id="setp"></div></section>
+</main>
+</div></div>
+<div id="modal"><div class="box" id="mbox"></div></div><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+$('#portalLink').href=BASE+'/portal';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,method='GET',body){
+  const r=await fetch(BASE+'/api'+path,{method,headers:{'Content-Type':'application/json','X-Base-Path':BASE},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(r.status===401){location.reload();throw new Error('login required')}
+  if(!r.ok){toast(j.error||('Error '+r.status),true);throw new Error(j.error||r.status)}
+  return j;
+}
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'var(--red)':'';t.style.color=bad?'#fff':'';t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2800)}
+const S={view:'open',sel:null,agents:[],groups:[],canned:[],me:null,role:'agent',tab:'reply'};
+const ST={2:'Open',3:'Pending',4:'Resolved',5:'Closed'},PR={1:'Low',2:'Medium',3:'High',4:'Urgent'};
+const ago=iso=>{if(!iso)return'';const m=Math.round((Date.now()-new Date(iso))/6e4);if(m<1)return'now';if(m<60)return m+'m';if(m<1440)return Math.round(m/60)+'h';return Math.round(m/1440)+'d'};
+const fsize=n=>n<1024?n+' B':n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';
+const attHtml=l=>(l&&l.length)?'<div>'+l.map(a=>`<a class="att" target="_blank" rel="noopener" href="${BASE}/api/attachments/${a.id}">&#128206; ${esc(a.filename)} <i>${fsize(a.size)}</i></a>`).join('')+'</div>':'';
+const readFile=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({name:f.name,type:f.type||'application/octet-stream',size:f.size,data:String(r.result).split(',')[1]||''});r.onerror=()=>no(r.error);r.readAsDataURL(f)});
+const fdate=iso=>iso?new Date(iso).toLocaleString():'-';
+const opts=(arr,sel,blank)=>(blank!==undefined?`<option value="">${blank}</option>`:'')+arr.map(([v,l])=>`<option value="${v}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`).join('');
+
+async function boot(){
+  const me=await api('/me');S.me=me.id;S.role=me.role;S.meName=me.name;S.publicUrl=me.public_url||'';
+  if(me.must_change){forcePin(me.name);return}
+  [S.agents,S.groups,S.canned]=await Promise.all([api('/agents'),api('/groups'),api('/canned')]);
+  $('#meName').textContent=me.name+(me.role==='admin'?' (admin)':'');
+  $('#logout').onclick=async()=>{await fetch(BASE+'/api/logout',{method:'POST',headers:{'X-Base-Path':BASE}});location.reload()};
+  if(me.role!=='admin'){const n=document.querySelector('#nav button[data-v="auto"]');if(n)n.style.display='none'}
+  loadSide();loadList();
+  openFromHash();
+}
+function forcePin(name){
+  document.querySelectorAll('#rail,#shell').forEach(e=>e.style.display='none');
+  const w=document.createElement('div');w.style.cssText='position:fixed;inset:0;z-index:9999;overflow:auto;background:var(--bg);padding:16px;display:flex;align-items:flex-start;justify-content:center';
+  w.innerHTML=`<div style="width:100%;max-width:380px;margin-top:10vh;padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:12px"><h2 style="margin-top:0">Welcome, ${esc(name)}</h2><p style="color:var(--mut)">Choose your own PIN (6-12 digits). You'll use it every time you sign in.</p>
+   <label>New PIN</label><input id="np1" type="password" inputmode="numeric" autocomplete="new-password"><label>Repeat new PIN</label><input id="np2" type="password" inputmode="numeric" autocomplete="new-password">
+   <div id="npe" style="color:var(--red);min-height:1.4em;margin-top:6px"></div><button class="btn" id="npok" style="width:100%">Save my PIN</button></div>`;
+  document.body.appendChild(w);
+  $('#npok').onclick=async()=>{const a=$('#np1').value.trim(),b=$('#np2').value.trim();
+    if(a!==b){$('#npe').textContent='The two PINs do not match';return}
+    const r=await fetch(BASE+'/api/me/pin',{method:'POST',headers:{'Content-Type':'application/json','X-Base-Path':BASE},body:JSON.stringify({pin:a})});
+    const j=await r.json().catch(()=>({}));if(r.ok)location.reload();else $('#npe').textContent=j.error||'Could not save'};
+}
+function openFromHash(){const m=/^#t(\d+)$/.exec(location.hash);if(m){show('tickets');openTicket(+m[1]).catch(()=>{})}}
+window.addEventListener('hashchange',()=>{const m=/^#t(\d+)$/.exec(location.hash);if(m&&+m[1]!==S.sel)openFromHash()});
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;show(b.dataset.v)};
+const VIEWNAME={tasks:'Tasks',threads:'Team threads',reports:'Reports',dash:'Dashboard',kb:'Knowledge base',auto:'Automations',canned:'Canned replies',settings:'Settings'};
+const VIEWLBL={open:'All open',unassigned:'Unassigned',overdue:'Overdue / SLA breach',closed:'Resolved & closed',all:'All tickets'};
+function setCrumb(v){const el=$('#crumb');if(v&&v!=='tickets'){el.innerHTML='<span>'+VIEWNAME[v]+'</span>';return}
+  const lbl=String(S.view).startsWith('agent:')?'My open':(VIEWLBL[S.view]||'Tickets');
+  el.innerHTML='<b>'+esc(lbl)+'</b>'+(S.sel?'<i>&gt;</i><span>'+S.sel+'</span>':'')}
+const PAL=[['#fdf1b8','#7a5d00'],['#d6e4ff','#25508f'],['#e0d8ff','#4b34a8'],['#ffe3cc','#9a4a0b'],['#d3f1de','#1e6b3a'],['#fbd9e5','#9c2a58']];
+const avc=n=>{let h=0;for(const c of String(n||'?'))h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
+const avHtml=(n,cls)=>{const [bg,fg]=avc(n);return `<span class="av ${cls||''}" style="background:${bg};color:${fg}">${esc((String(n||'?').trim()[0]||'?').toUpperCase())}</span>`};
+const durTxt=ms=>{const m=Math.floor(Math.abs(ms)/6e4);if(m<60)return Math.max(m,1)+'m';if(m<1440)return Math.floor(m/60)+'h';return Math.floor(m/1440)+'d'};
+const CLOCK='<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>';
+const slaPill=t=>{if(t.status>=4||!t.due_by)return'';const ms=new Date(t.due_by)-Date.now();return `<span class="sla ${ms<0?'od':''}" title="${ms<0?'Overdue by ':'Due in '}${durTxt(ms)}">${CLOCK}${durTxt(ms)}</span>`};
+const SRC={email:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+ portal:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+ whatsapp:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.8z"/></svg>',
+ phone:'<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>'};
+SRC.chat=SRC.api=SRC.email;
+function show(v){setCrumb(v);document.body.dataset.view=v;
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  ({tickets:()=>{loadSide();loadList()},dash:loadDash,tasks:()=>loadTasks(),threads:()=>loadThreads(),reports:()=>loadReports(),kb:loadKb,auto:loadAuto,canned:loadCanned,settings:loadSettings})[v]();
+}
+async function loadSide(){
+  const all=await api('/tickets?view=all');const open=all.filter(t=>t.status<4);
+  const items=[['open','All open',open.length],['agent:'+S.me,'My open',open.filter(t=>t.responder_id===S.me).length],
+   ['unassigned','Unassigned',open.filter(t=>!t.responder_id).length],['overdue','Overdue / SLA breach',all.filter(t=>t.overdue||t.fr_overdue).length],
+   ['closed','Resolved & closed',all.filter(t=>t.status>=4).length],['all','All tickets',all.length]];
+  $('#viewSel').innerHTML=items.map(([k,l,n])=>`<option value="${k}" ${S.view===k?'selected':''}>${l} (${n})</option>`).join('');
+  $('#viewSel').onchange=e=>{S.view=e.target.value;S.sel=null;setCrumb('tickets');loadList()};setCrumb('tickets');
+}
+let qT;$('#q').oninput=()=>{clearTimeout(qT);qT=setTimeout(loadList,250)};
+async function loadList(){
+  const q=$('#q').value.trim();
+  const rows=await api('/tickets?view='+encodeURIComponent(S.view)+(q?'&q='+encodeURIComponent(q):''));
+  $('#cnt').textContent=rows.length+(rows.length===1?' ticket':' tickets');
+  $('#rows').innerHTML=rows.length?rows.map(t=>{const pv=(t.description||'').replace(/\s+/g,' ').trim().slice(0,70);
+    return `<div class="row ${S.sel===t.id?'on':''}" data-id="${t.id}">${avHtml(t.requester_name)}<div class="rb">
+    <div class="r1"><span class="who">#${t.id} · ${esc(t.requester_name)}${t.requester_company?' '+esc(t.requester_company):''}</span>${slaPill(t)}</div>
+    <div class="r2">${esc(t.subject)}</div>
+    <div class="r3">${SRC[t.source]||SRC.email}<em>${esc(pv||'(no message)')}</em>${t.priority>=3?`<span class="p${t.priority}">${PR[t.priority]}</span>`:''}${t.status!==2?`<span class="st${t.status}">${ST[t.status]}</span>`:''}</div></div></div>`}).join(''):'<div class="empty">No tickets</div>';
+  $('#rows').onclick=e=>{const r=e.target.closest('.row');if(r)openTicket(+r.dataset.id)};
+}
+async function openTicket(id){
+  if(S.sel!==id){S.draft='';S.pending=[]}
+  S.sel=id;setCrumb('tickets');const t=await api('/tickets/'+id);
+  if(location.hash!=='#t'+id)history.replaceState(null,'','#t'+id);
+  document.querySelectorAll('.row').forEach(r=>r.classList.toggle('on',+r.dataset.id===id));
+  $('#detail').innerHTML=`
+  <div class="flex"><button class="btn sec backBtn" id="backBtn">← Back</button><h2 style="margin:0" class="sp">${esc(t.subject)} <small style="color:var(--mut)">#${t.id}</small></h2>
+    <button class="btn sec" id="delT">Delete</button></div>
+  <div style="color:var(--mut);margin:4px 0 10px">${esc(t.requester_name)} &lt;${esc(t.requester_email)}&gt; · via ${esc(t.source)} · created ${fdate(t.created_at)}
+   ${t.overdue?' · <b style="color:var(--red)">resolution overdue (due '+fdate(t.due_by)+')</b>':t.status<4?' · due '+fdate(t.due_by):''}
+   ${t.fr_overdue?' · <b style="color:var(--red)">first response overdue</b>':''}</div>
+  <div class="card"><div class="grid"><div><label>Customer WhatsApp / phone</label><input id="f_phone" type="tel" value="${esc(t.requester_phone||'')}" placeholder="e.g. 082 123 4567"></div></div>
+    <div class="actions" style="margin-top:10px"><button class="btn sec" id="actEmail">${IC.mail} Email customer</button><button class="btn sec" id="actFwd">${IC.mail} Email this ticket…</button>
+    <button class="btn sec" id="actWa">${IC.wa} WhatsApp customer</button><button class="btn sec" id="actWaIn">${IC.wa} Log customer's WhatsApp reply</button><button class="btn sec" id="actWaAgent">${IC.wa} WhatsApp agent</button><button class="btn sec" id="actWaShare">${IC.wa} Share ticket…</button>
+    <button class="btn sec" id="actCopy">${IC.link} Copy customer link</button></div></div>
+  <div class="card"><div class="grid">
+    <div><label>Status</label><select id="f_status">${opts(Object.entries(ST),t.status)}</select></div>
+    <div><label>Priority</label><select id="f_priority">${opts(Object.entries(PR),t.priority)}</select></div>
+    <div><label>Agent</label><select id="f_responder_id">${opts(S.agents.map(a=>[a.id,a.name]),t.responder_id,'— Unassigned —')}</select></div>
+    <div><label>Group</label><select id="f_group_id">${opts(S.groups.map(g=>[g.id,g.name]),t.group_id,'— None —')}</select></div>
+    <div><label>Type</label><input id="f_type" value="${esc(t.type||'')}" placeholder="e.g. Question"></div>
+    <div><label>Tags (comma separated)</label><input id="f_tags" value="${esc(t.tags.join(', '))}"></div></div>
+    <div style="margin-top:10px"><button class="btn" id="saveP">Update properties</button></div></div>
+  <div class="card" id="tkCard"></div><div class="card" id="asCard"><span style="color:var(--mut)">Loading suggestions…</span></div>
+  ${t.conversations.map(c=>`<div class="msg ${c.kind==='incoming'?'':c.kind}">${avHtml(c.kind==='incoming'?(c.contact_name||c.from_email):(c.agent_name||'Agent'),'sm')}<div class="mb"><div class="h"><span><b>${esc(c.kind==='incoming'?(c.contact_name||c.from_email):(c.agent_name||'Agent'))}</b>
+    ${c.kind==='note'?'· private note':c.kind==='reply'?'· reply':''}${c.delivery?' · <i>'+esc(c.delivery)+'</i>':''}</span><span>${fdate(c.created_at)}</span></div>${esc(c.body)}${attHtml(c.attachments)}</div></div>`).join('')}
+  <div class="card"><div class="tabs"><button data-k="reply" class="${S.tab==='reply'?'on':''}">Reply</button><button data-k="note" class="${S.tab==='note'?'on':''}">Private note</button>
+    <span class="sp"></span><select id="canSel" style="width:200px"><option value="">Insert canned reply…</option>${S.canned.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
+    <textarea id="body" placeholder="Write a ${S.tab==='note'?'private note (not sent)':'reply to the customer'}…">${esc(S.draft||'')}</textarea>
+    <div style="margin-top:6px"><label class="btn sec" for="attIn" style="margin:0;display:inline-block">&#128206; Attach files</label><input type="file" id="attIn" multiple hidden><span id="attList"></span></div>
+    <div class="flex" style="margin-top:8px"><label style="margin:0">Then set status</label><select id="after" style="width:150px">${opts([['','(keep)'],...Object.entries(ST)],'')}</select>
+    <span class="sp"></span><button class="btn" id="send">${S.tab==='note'?'Add note':'Send reply'}</button></div></div>
+  ${(t.emails&&t.emails.length)?`<details class="card"><summary>Emails sent about this ticket (${t.emails.length})</summary>${t.emails.map(m=>`<div style="font-size:12px;color:var(--mut);margin-top:6px">${fdate(m.created_at)} — ${esc(m.event)} to <b>${esc(m.to_addr)}</b>: <span style="color:${m.status==='sent'?'#16a34a':'var(--red)'}">${esc(m.status)}</span></div>`).join('')}</details>`:''}
+  <details class="card"><summary>Activity log</summary>${t.activity.map(a=>`<div style="font-size:12px;color:var(--mut);margin-top:6px">${fdate(a.created_at)} — <b>${esc(a.actor)}</b>: ${esc(a.change)}</div>`).join('')}</details>`;
+  loadTicketExtras(t).catch(()=>{});
+  $('#saveP').onclick=async()=>{await api('/tickets/'+id,'PATCH',{status:+$('#f_status').value,priority:+$('#f_priority').value,
+    responder_id:$('#f_responder_id').value||null,group_id:$('#f_group_id').value||null,type:$('#f_type').value||null,tags:$('#f_tags').value,actor:meName()});
+    toast('Updated');await openTicket(id);loadList();loadSide()};
+  $('#v-tickets').dataset.pane='detail';$('#backBtn').onclick=()=>{$('#v-tickets').dataset.pane='list';S.sel=null;history.replaceState(null,'',location.pathname+location.search);setCrumb('tickets');document.querySelectorAll('.row.on').forEach(r=>r.classList.remove('on'))};
+  const first=(t.requester_name||'there').split(' ')[0];
+  $('#f_phone').onchange=async e=>{await api('/contacts/'+t.requester_id,'PATCH',{phone:e.target.value});t.requester_phone=e.target.value;toast('Phone saved')};
+  $('#actEmail').onclick=()=>mailto(t.requester_email,'Re: '+t.subject+(t.subject.includes('[#'+t.id+']')?'':' [#'+t.id+']'),'Hi '+first+',\n\n\n\nYou can follow this ticket here (no sign-in needed): '+custLink(t)+'\n\n--- '+'\n'+ticketText(t,true,true));
+  $('#actFwd').onclick=()=>mailto('','Ticket #'+t.id+': '+t.subject,ticketText(t,true));
+  $('#actWa').onclick=()=>{const n=waNumber($('#f_phone').value);if(!n)return toast("Add the customer's WhatsApp number first",true);
+    const txt=`Hi ${first}, this is ${meName()} from support about your ticket #${t.id} "${t.subject}". Status: ${ST[t.status]}. Follow it here: ${custLink(t)}`;
+    modal(`<h3 style="margin-top:0">WhatsApp ${esc(t.requester_name)}</h3><p style="color:var(--mut);margin:0 0 8px">Change the message if you like. WhatsApp opens with it ready to send, and it is saved on the ticket as a reply.</p>
+      <textarea id="wa_t" rows="7">${esc(txt)}</textarea><div class="flex" style="margin-top:12px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="wa_go">${IC.wa} Open WhatsApp &amp; save</button></div>`);
+    $('#wa_go').onclick=()=>{const m=$('#wa_t').value.trim();if(!m)return;waOpen(n,m);
+      api('/tickets/'+id+'/whatsapp','POST',{to:'customer',text:m}).then(()=>{closeModal();toast('Saved on the ticket');openTicket(id);loadList()}).catch(()=>{})}};
+  $('#actWaIn').onclick=()=>{modal(`<h3 style="margin-top:0">Log a WhatsApp message from ${esc(t.requester_name)}</h3><p style="color:var(--mut);margin:0 0 8px">Paste or type what the customer sent on WhatsApp so it is part of the ticket history.</p>
+      <textarea id="wi_t" rows="6" placeholder="Customer's message…"></textarea><div class="flex" style="margin-top:12px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="wi_go">Save on ticket</button></div>`);
+    $('#wi_go').onclick=()=>{const m=$('#wi_t').value.trim();if(!m)return;api('/tickets/'+id+'/whatsapp','POST',{to:'customer_in',text:m}).then(()=>{closeModal();toast('Saved on the ticket');openTicket(id);loadList()}).catch(()=>{})}};
+  $('#actCopy').onclick=async()=>{const u=custLink(t);try{await navigator.clipboard.writeText(u);toast('Customer link copied')}catch(e){prompt('Copy this customer link:',u)}};
+  $('#actWaAgent').onclick=()=>{const id=+$('#f_responder_id').value||t.responder_id;const ag=S.agents.find(a=>a.id===id);if(!ag)return toast('Assign the ticket to an agent first',true);
+    const n=waNumber(ag.phone);if(!n)return toast(ag.name+' has no WhatsApp number - add it in Settings > Agents',true);
+    const m=`Hi ${ag.name.split(' ')[0]}, ticket #${t.id} "${t.subject}" is assigned to you (${PR[t.priority]} priority, ${t.requester_name}). Open it: ${ticketLink(t.id)}`;
+    waOpen(n,m);api('/tickets/'+id+'/whatsapp','POST',{to:'agent',text:m,name:ag.name}).catch(()=>{})};
+  $('#actWaShare').onclick=()=>{const m=ticketText(t,false);waOpen('',m);api('/tickets/'+id+'/whatsapp','POST',{to:'share',text:m}).catch(()=>{})};
+  document.querySelectorAll('.tabs [data-k]').forEach(b=>b.onclick=()=>{S.draft=$('#body').value;S.tab=b.dataset.k;openTicket(id)});
+  $('#canSel').onchange=e=>{const c=S.canned.find(x=>x.id==e.target.value);if(c){$('#body').value+=c.body;e.target.value=''}};
+  const drawAtt=()=>{$('#attList').innerHTML=(S.pending||[]).map((f,i)=>`<span class="att">${esc(f.name)} <i>${fsize(f.size)}</i><b data-rm="${i}" title="Remove">&times;</b></span>`).join('')};
+  drawAtt();$('#attList').onclick=e=>{const b=e.target.closest('[data-rm]');if(b){S.pending.splice(+b.dataset.rm,1);drawAtt()}};
+  $('#attIn').onchange=async e=>{S.pending=S.pending||[];for(const f of e.target.files){
+      if(f.size>10*1048576){toast(f.name+' is bigger than 10 MB',true);continue}
+      if(S.pending.length>=5){toast('At most 5 files per message',true);break}
+      S.pending.push(await readFile(f))}e.target.value='';drawAtt()};
+  $('#send').onclick=async()=>{const body=$('#body').value.trim();if(!body)return toast('Write something first',true);
+    const r=await api('/tickets/'+id+'/reply','POST',{kind:S.tab,body,agent_id:S.me,status:$('#after').value||null,attachments:(S.pending||[]).map(f=>({name:f.name,type:f.type,data:f.data}))});
+    S.draft='';S.pending=[];toast(S.tab==='note'?'Note added':'Reply saved — '+(r.delivery||''));await openTicket(id);loadList();loadSide()};
+  $('#delT').onclick=async()=>{if(!confirm('Delete this ticket?'))return;await api('/tickets/'+id,'DELETE');S.sel=null;$('#v-tickets').dataset.pane='list';$('#detail').innerHTML='<div class="empty">Ticket deleted</div>';loadList();loadSide()};
+}
+const meName=()=>S.agents.find(a=>a.id===S.me)?.name||'agent';
+function modal(html){$('#mbox').innerHTML=html;$('#modal').classList.add('on')}
+function closeModal(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+$('#newBtn').onclick=()=>{
+  modal(`<h3 style="margin-top:0">New ticket</h3>
+  <label>Requester email *</label><input id="n_email" type="email"><label>Requester name</label><input id="n_name"><label>WhatsApp / phone</label><input id="n_phone" type="tel" placeholder="e.g. 082 123 4567">
+  <label>Subject *</label><input id="n_subj"><label>Description</label><textarea id="n_desc"></textarea>
+  <div class="grid"><div><label>Priority</label><select id="n_pri">${opts(Object.entries(PR),1)}</select></div>
+  <div><label>Source</label><select id="n_src">${opts(['phone','whatsapp','email','portal','chat'].map(x=>[x,x]),'whatsapp')}</select></div>
+  <div><label>Agent</label><select id="n_agent">${opts(S.agents.map(a=>[a.id,a.name]),S.me,'Unassigned')}</select></div></div>
+  <div class="flex" style="margin-top:14px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="n_ok">Create</button></div>`);
+  $('#n_ok').onclick=async()=>{try{const r=await api('/tickets','POST',{requester_email:$('#n_email').value,requester_name:$('#n_name').value,requester_phone:$('#n_phone').value,
+    subject:$('#n_subj').value,description:$('#n_desc').value,priority:+$('#n_pri').value,source:$('#n_src').value,responder_id:$('#n_agent').value||null,actor:meName()});
+    closeModal();S.view='open';await loadSide();await loadList();openTicket(r.id);toast('Ticket #'+r.id+' created')}catch(e){}};
+};
+async function loadDash(){
+  const s=await api('/stats');
+  const k=(l,v,c)=>`<div class="kpi"><span>${l}</span><div class="big" style="${c?'color:var(--red)':''}">${v}</div></div>`;
+  $('#dash').innerHTML=`<h2 style="margin-top:0">Dashboard</h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+  ${k('Open',s.open)}${k('Pending',s.pending)}${k('Unassigned',s.unassigned,s.unassigned)}${k('Resolution overdue',s.overdue,s.overdue)}
+  ${k('First response overdue',s.fr_overdue,s.fr_overdue)}${k('Resolved / closed',s.resolved+s.closed)}
+  ${k('Avg first response',s.avg_first_response_mins==null?'—':s.avg_first_response_mins+' min')}${k('CSAT',s.csat_avg==null?'—':s.csat_avg+' / 5')}</div>
+  <h3>Active tickets by priority</h3><table><tr>${Object.keys(s.by_priority).map(p=>`<th>${p}</th>`).join('')}</tr><tr>${Object.values(s.by_priority).map(v=>`<td class="big">${v}</td>`).join('')}</tr></table>`;
+}
+/* ---------- tasks ---------- */
+const dueCls=d=>d&&d<new Date().toISOString().slice(0,10)?'color:var(--red);font-weight:600':'color:var(--mut)';
+function taskRow(k,showTicket){return `<div class="trow" data-k="${k.id}" style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+  <input type="checkbox" data-done="${k.id}" ${k.done?'checked':''} style="width:20px;height:20px;flex:none">
+  <div style="flex:1;min-width:0"><div style="${k.done?'text-decoration:line-through;color:var(--mut)':''}">${esc(k.title)}</div>
+  <div style="font-size:12px;color:var(--mut)">${k.assignee_name?esc(k.assignee_name):'Unassigned'}${k.due?` · <span style="${k.done?'':dueCls(k.due)}">due ${esc(k.due)}</span>`:''}${showTicket&&k.ticket_id?` · <a href="#t${k.ticket_id}" onclick="show('tickets')">#${k.ticket_id} ${esc(k.ticket_subject||'')}</a>`:''}</div></div>
+  <button class="btn sec" data-tdel="${k.id}" title="Delete task" style="padding:4px 10px">&times;</button></div>`}
+function taskForm(prefix,ticketId){return `<div class="flex" style="margin-top:10px;flex-wrap:wrap;gap:6px"><input id="${prefix}_t" placeholder="New task…" style="flex:2;min-width:160px">
+  <select id="${prefix}_a" style="flex:1;min-width:120px">${opts(S.agents.filter(a=>a.active!==0).map(a=>[a.id,a.name]),S.me)}</select>
+  <input id="${prefix}_d" type="date" style="flex:1;min-width:130px"><button class="btn" id="${prefix}_ok">Add</button></div>`}
+function wireTasks(root,prefix,ticketId,reload){
+  $('#'+prefix+'_ok').onclick=async()=>{const title=$('#'+prefix+'_t').value.trim();if(!title)return toast('Describe the task',true);
+    await api('/tasks','POST',{title,ticket_id:ticketId||null,assignee_id:$('#'+prefix+'_a').value,due:$('#'+prefix+'_d').value});reload()};
+  root.onclick=async e=>{const d=e.target.closest('[data-done]'),x=e.target.closest('[data-tdel]');
+    if(d){await api('/tasks/'+d.dataset.done,'PATCH',{done:d.checked});reload()}
+    if(x&&confirm('Delete task?')){await api('/tasks/'+x.dataset.tdel,'DELETE');reload()}}}
+async function loadTasks(scope){
+  scope=scope||S.taskScope||'mine';S.taskScope=scope;
+  const k=await api('/tasks?scope='+scope);
+  $('#tasksp').innerHTML=`<h2 style="margin-top:0">Tasks</h2><div class="tabs">${[['mine','My open'],['open','All open'],['done','Done'],['all','All']].map(([v,l])=>`<button data-s="${v}" class="${v===scope?'on':''}">${l}</button>`).join('')}</div>
+  <div class="card" style="margin-top:10px">${k.map(x=>taskRow(x,true)).join('')||'<p style="color:var(--mut)">Nothing here.</p>'}${taskForm('tk',null)}</div>`;
+  $('#tasksp').querySelectorAll('.tabs [data-s]').forEach(b=>b.onclick=()=>loadTasks(b.dataset.s));
+  wireTasks($('#tasksp .card'),'tk',null,()=>loadTasks(scope));
+}
+/* ---------- team threads ---------- */
+async function loadThreads(openId){
+  const th=await api('/threads');
+  $('#threadsp').innerHTML=`<div class="flex"><h2 class="sp" style="margin:0">Team threads</h2><button class="btn" id="thNew">+ New thread</button></div>
+  <p style="color:var(--mut)">Internal discussions between agents - customers never see these. Link a thread to a ticket if it is about one.</p>
+  <div id="thList">${th.map(x=>`<div class="card" data-th="${x.id}" style="cursor:pointer;margin-bottom:8px"><b>${esc(x.title)}</b> ${x.closed?'<span style="color:var(--mut)">(closed)</span>':''}
+   <div style="font-size:12px;color:var(--mut)">${esc(x.author_name||'')} · ${x.msgs} message${x.msgs==1?'':'s'} · ${ago(x.updated_at)} ago${x.ticket_id?' · ticket #'+x.ticket_id:''}</div></div>`).join('')||'<p style="color:var(--mut)">No threads yet.</p>'}</div><div id="thView"></div>`;
+  $('#thNew').onclick=()=>{modal(`<h3 style="margin-top:0">New thread</h3><label>Title</label><input id="th_t"><label>Ticket number (optional)</label><input id="th_k" inputmode="numeric" placeholder="e.g. 12">
+    <label>Message</label><textarea id="th_b"></textarea><div class="flex" style="margin-top:12px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="th_ok">Start thread</button></div>`);$('#th_ok').onclick=async()=>{
+    try{const r=await api('/threads','POST',{title:$('#th_t').value,body:$('#th_b').value,ticket_id:$('#th_k').value||null});closeModal();loadThreads(r.id)}catch(e){}}};
+  $('#thList').onclick=e=>{const c=e.target.closest('[data-th]');if(c)showThread(+c.dataset.th)};
+  if(openId)showThread(openId);
+}
+async function showThread(id){
+  const t=await api('/threads/'+id);
+  $('#thView').innerHTML=`<div class="card" style="border-color:var(--acc)"><div class="flex"><h3 class="sp" style="margin:0">${esc(t.title)}</h3><button class="btn sec" id="thClose">${t.closed?'Reopen':'Close'}</button><button class="btn sec" id="thDel">Delete</button></div>
+  ${t.ticket_id?`<div style="font-size:12px;color:var(--mut)">About ticket <a href="#t${t.ticket_id}" onclick="show('tickets')">#${t.ticket_id} ${esc(t.ticket_subject||'')}</a></div>`:''}
+  ${t.messages.map(m=>`<div class="msg note">${avHtml(m.agent_name||'Agent','sm')}<div class="mb"><div class="h"><span><b>${esc(m.agent_name||'Agent')}</b></span><span>${fdate(m.created_at)}</span></div>${esc(m.body)}</div></div>`).join('')}
+  <textarea id="th_r" placeholder="Reply to the team…"></textarea><div style="margin-top:8px"><button class="btn" id="thSend">Send</button></div></div>`;
+  $('#thSend').onclick=async()=>{const b=$('#th_r').value.trim();if(!b)return;await api('/threads/'+id+'/reply','POST',{body:b});showThread(id)};
+  $('#thClose').onclick=async()=>{await api('/threads/'+id,'PATCH',{closed:t.closed?0:1});loadThreads(id)};
+  $('#thDel').onclick=async()=>{if(confirm('Delete this thread?')){await api('/threads/'+id,'DELETE');loadThreads()}};
+  $('#thView').scrollIntoView({behavior:'smooth'});
+}
+/* ---------- reports ---------- */
+const dur=m=>m==null?'—':m<90?m+' min':m<2880?(m/60).toFixed(1)+' h':(m/1440).toFixed(1)+' d';
+async function loadReports(days){
+  days=days||S.repDays||30;S.repDays=days;const r=await api('/reports?days='+days);
+  const k=(l,v,s)=>`<div class="kpi"><span>${l}</span><div class="big">${v}</div>${s?`<span>${s}</span>`:''}</div>`;
+  const max=Math.max(1,...r.daily.map(d=>Math.max(d.created,d.resolved)));
+  const W=Math.max(300,r.daily.length*14),H=120,bw=W/r.daily.length;
+  const bars=r.daily.map((d,i)=>`<rect stroke="none" x="${i*bw+1}" y="${H-d.created/max*H}" width="${bw/2-1}" height="${d.created/max*H}" fill="#2563eb"><title>${d.date}: ${d.created} created</title></rect><rect stroke="none" x="${i*bw+bw/2}" y="${H-d.resolved/max*H}" width="${bw/2-1}" height="${d.resolved/max*H}" fill="#16a34a"><title>${d.date}: ${d.resolved} resolved</title></rect>`).join('');
+  const dist=(o)=>{const t=Math.max(1,Object.values(o).reduce((a,b)=>a+b,0));return Object.entries(o).map(([n,v])=>`<div style="margin:5px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(n)}</span><b>${v}</b></div><div style="background:var(--line);border-radius:4px;height:8px"><div style="background:var(--acc);height:8px;border-radius:4px;width:${v/t*100}%"></div></div></div>`).join('')||'<span style="color:var(--mut)">No data</span>'};
+  $('#reportsp').innerHTML=`<div class="flex"><h2 class="sp" style="margin:0">Reports</h2><select id="repDays" style="width:150px">${opts([[7,'Last 7 days'],[30,'Last 30 days'],[90,'Last 90 days'],[365,'Last year']],days)}</select><button class="btn sec" id="repCsv">Export tickets (CSV)</button></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:12px">
+  ${k('Created',r.created)}${k('Resolved',r.resolved)}${k('Open backlog',r.backlog)}${k('Avg first response',dur(r.avg_first_response_mins))}${k('Avg resolution',dur(r.avg_resolution_mins))}
+  ${k('First-response SLA met',r.fr_sla_pct==null?'—':r.fr_sla_pct+'%')}${k('Resolution SLA met',r.res_sla_pct==null?'—':r.res_sla_pct+'%')}${k('CSAT',r.csat_avg==null?'—':r.csat_avg+' / 5',r.csat_count+' rating(s)')}</div>
+  <div class="card" style="margin-top:14px"><b>Tickets per day</b> <span style="font-size:12px;color:var(--mut)"><span style="color:#2563eb">■</span> created <span style="color:#16a34a">■</span> resolved</span>
+   <div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${Math.min(W,600)}px;height:140px" preserveAspectRatio="none">${bars}</svg></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><div class="card"><b>By status</b>${dist(r.by_status)}</div><div class="card"><b>By priority</b>${dist(r.by_priority)}</div><div class="card"><b>By source</b>${dist(r.by_source)}</div></div>
+  <div class="card"><b>By agent</b><table style="margin-top:8px"><tr><th>Agent</th><th>Open now</th><th>Resolved</th><th>Avg resolution</th></tr>${r.by_agent.map(a=>`<tr><td>${esc(a.agent)}</td><td>${a.open}</td><td>${a.resolved}</td><td>${dur(a.avg_resolution_mins)}</td></tr>`).join('')}</table></div>`;
+  $('#repDays').onchange=e=>loadReports(+e.target.value);
+  $('#repCsv').onclick=async()=>{const all=await api('/tickets?view=all');const cols=['id','subject','status_name','priority_name','source','requester_name','requester_email','responder_name','group_name','created_at','first_responded_at','resolved_at','due_by'];
+    const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const csv=[cols.join(',')].concat(all.map(t=>cols.map(c=>q(t[c])).join(','))).join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));a.download='tickets-'+new Date().toISOString().slice(0,10)+'.csv';a.click()};
+}
+/* ---------- ticket: tasks card + assistant ---------- */
+async function loadTicketExtras(t){
+  const tk=await api('/tasks?ticket='+t.id);
+  const box=$('#tkCard');if(!box)return;
+  box.innerHTML=`<b>Tasks</b> <span style="color:var(--mut);font-size:12px">${tk.filter(x=>!x.done).length} open</span><div id="tkList">${tk.map(x=>taskRow(x,false)).join('')}</div>${taskForm('tt',t.id)}`;
+  wireTasks($('#tkList'),'tt',t.id,()=>loadTicketExtras(t));
+  const a=await api('/tickets/'+t.id+'/assist');const ab=$('#asCard');if(!ab)return;
+  const none='<span style="color:var(--mut)">nothing found</span>';
+  ab.innerHTML=`<details ${a.articles.length||a.canned.length?'open':''}><summary><b>Assistant</b> <span style="font-weight:400;color:var(--mut);font-size:12px">suggestions from your knowledge base, canned replies and past tickets</span></summary>
+  <p style="margin:8px 0;color:var(--mut)">${esc(a.summary)}</p>
+  ${a.suggested_priority?`<p>Looks <b>${esc(a.suggested_priority)}</b> - <button class="btn sec" id="asPri">Set priority to ${esc(a.suggested_priority)}</button></p>`:''}
+  <div><b style="font-size:13px">Help articles</b>${a.articles.map(x=>`<div class="flex" style="margin:4px 0"><span class="sp">${esc(x.title)}</span><button class="btn sec" data-art="${x.id}">Insert into reply</button></div>`).join('')||' '+none}</div>
+  <div style="margin-top:6px"><b style="font-size:13px">Canned replies</b>${a.canned.map(x=>`<div class="flex" style="margin:4px 0"><span class="sp">${esc(x.title)}</span><button class="btn sec" data-can="${x.id}">Insert</button></div>`).join('')||' '+none}</div>
+  <div style="margin-top:6px"><b style="font-size:13px">Similar tickets</b>${a.similar.map(x=>`<div style="margin:4px 0"><a href="#t${x.id}">#${x.id} ${esc(x.subject)}</a> <span style="color:var(--mut)">(${ST[x.status]})</span></div>`).join('')||' '+none}</div></details>`;
+  ab.onclick=e=>{const p=e.target.closest('#asPri'),ar=e.target.closest('[data-art]'),cn=e.target.closest('[data-can]');
+    if(p){$('#f_priority').value=Object.entries(PR).find(([k,v])=>v===a.suggested_priority)[0];toast('Priority set - press "Update properties" to save')}
+    if(ar){const x=a.articles.find(z=>z.id==ar.dataset.art);S.tab='reply';$('#body').value+=(($('#body').value?'\n\n':'')+x.title+'\n'+x.body);$('#body').focus()}
+    if(cn){const x=a.canned.find(z=>z.id==cn.dataset.can);$('#body').value+=(($('#body').value?'\n\n':'')+x.body);$('#body').focus()}};
+}
+async function loadKb(){
+  const a=await api('/kb');
+  $('#kbp').innerHTML=`<div class="flex"><h2 class="sp" style="margin:0">Knowledge base</h2><button class="btn" id="kbNew">+ Article</button></div><p style="color:var(--mut)">Published articles appear on the <a href="${BASE}/portal" target="_blank">customer portal</a>.</p>
+  <table><tr><th>Folder</th><th>Title</th><th>Status</th><th></th></tr>${a.map(x=>`<tr><td>${esc(x.folder)}</td><td>${esc(x.title)}</td><td>${x.published?'Published':'Draft'}</td>
+  <td><button class="btn sec" data-e="${x.id}">Edit</button> <button class="btn sec" data-d="${x.id}">Delete</button></td></tr>`).join('')}</table>`;
+  const edit=x=>{modal(`<h3 style="margin-top:0">${x?'Edit':'New'} article</h3><label>Folder</label><input id="k_f" value="${esc(x?.folder||'General')}">
+   <label>Title</label><input id="k_t" value="${esc(x?.title||'')}"><label>Body</label><textarea id="k_b" style="min-height:160px">${esc(x?.body||'')}</textarea>
+   <label><input type="checkbox" id="k_p" style="width:auto" ${x?.published?'checked':''}> Published on portal</label>
+   <div class="flex" style="margin-top:12px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="k_ok">Save</button></div>`);
+   $('#k_ok').onclick=async()=>{const d={folder:$('#k_f').value,title:$('#k_t').value,body:$('#k_b').value,published:$('#k_p').checked?1:0};
+     if(!d.title)return toast('Title required',true);x?await api('/kb/'+x.id,'PATCH',d):await api('/kb','POST',d);closeModal();loadKb()}};
+  $('#kbNew').onclick=()=>edit();
+  $('#kbp').onclick=async e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.e)edit(a.find(x=>x.id==b.dataset.e));
+    if(b.dataset.d&&confirm('Delete article?')){await api('/kb/'+b.dataset.d,'DELETE');loadKb()}};
+}
+async function loadAuto(){
+  const a=await api('/automations');
+  $('#autop').innerHTML=`<div class="flex"><h2 class="sp" style="margin:0">Automations</h2><button class="btn" id="aNew">+ Rule</button></div>
+  <p style="color:var(--mut)">Rules run when a ticket is created or updated. Conditions: <code>{"field":"text|subject|priority|status|source|group_id|responder_id|requester_email","op":"eq|neq|contains|not_contains|gte|lte","value":…}</code>.
+  Actions: <code>{"set":"priority","value":4}</code> or <code>{"add_tag":"vip"}</code>.</p>
+  <table><tr><th>Name</th><th>Trigger</th><th>Conditions</th><th>Actions</th><th>On</th><th></th></tr>${a.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.trigger}</td>
+  <td><code>${esc(r.conditions)}</code></td><td><code>${esc(r.actions)}</code></td><td><input type="checkbox" style="width:auto" data-t="${r.id}" ${r.active?'checked':''}></td>
+  <td><button class="btn sec" data-d="${r.id}">Delete</button></td></tr>`).join('')}</table>`;
+  $('#aNew').onclick=()=>{modal(`<h3 style="margin-top:0">New rule</h3><label>Name</label><input id="a_n"><label>Trigger</label><select id="a_t"><option>ticket_created</option><option>ticket_updated</option></select>
+   <label>Conditions (JSON list)</label><textarea id="a_c">[{"field":"text","op":"contains","value":"urgent"}]</textarea>
+   <label>Actions (JSON list)</label><textarea id="a_a">[{"set":"priority","value":3}]</textarea>
+   <div class="flex" style="margin-top:12px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="a_ok">Save</button></div>`);
+   $('#a_ok').onclick=async()=>{try{await api('/automations','POST',{name:$('#a_n').value,trigger:$('#a_t').value,conditions:$('#a_c').value,actions:$('#a_a').value});closeModal();loadAuto()}catch(e){}}};
+  $('#autop').onclick=async e=>{const b=e.target.closest('button[data-d]');if(b&&confirm('Delete rule?')){await api('/automations/'+b.dataset.d,'DELETE');loadAuto()}};
+  $('#autop').onchange=async e=>{if(e.target.dataset.t){await api('/automations/'+e.target.dataset.t,'PATCH',{active:e.target.checked?1:0});toast('Saved')}};
+}
+async function loadCanned(){
+  S.canned=await api('/canned');
+  $('#cannedp').innerHTML=`<div class="flex"><h2 class="sp" style="margin:0">Canned replies</h2></div>
+  <div class="card"><label>Title</label><input id="c_t"><label>Body</label><textarea id="c_b"></textarea><div style="margin-top:8px"><button class="btn" id="c_add">Add</button></div></div>
+  <table><tr><th>Title</th><th>Body</th><th></th></tr>${S.canned.map(c=>`<tr><td>${esc(c.title)}</td><td style="white-space:pre-wrap">${esc(c.body)}</td><td><button class="btn sec" data-d="${c.id}">Delete</button></td></tr>`).join('')}</table>`;
+  $('#c_add').onclick=async()=>{if(!$('#c_t').value||!$('#c_b').value)return toast('Title and body required',true);await api('/canned','POST',{title:$('#c_t').value,body:$('#c_b').value});loadCanned()};
+  $('#cannedp').onclick=async e=>{const b=e.target.closest('button[data-d]');if(b){await api('/canned/'+b.dataset.d,'DELETE');loadCanned()}};
+}
+/* ---------- settings (tabbed) ---------- */
+const SET_TABS=[['account','My account'],['agents','Agents',1],['mail','Mailboxes',1],['notify','Email notifications',1],['sla','SLA'],['adv','Advanced',1]];
+async function loadSettings(tab){
+  const adm=S.role==='admin';tab=tab||S.setTab||'account';if(!adm&&SET_TABS.find(t=>t[0]===tab)?.[2])tab='account';S.setTab=tab;
+  $('#setp').innerHTML=`<h2 style="margin-top:0">Settings</h2><div class="tabs" id="setTabs" style="flex-wrap:wrap">${SET_TABS.filter(t=>adm||!t[2]).map(t=>`<button data-st="${t[0]}" class="${t[0]===tab?'on':''}">${t[1]}</button>`).join('')}</div><div id="setBody"></div>`;
+  $('#setTabs').onclick=e=>{const b=e.target.closest('[data-st]');if(b)loadSettings(b.dataset.st)};
+  await ({account:setAccount,agents:setAgents,mail:setMail,notify:setNotify,sla:setSla,adv:setAdv}[tab])($('#setBody'));
+}
+async function setAccount(el){
+  el.innerHTML=`<div class="card"><b>My PIN</b><p style="color:var(--mut);margin:4px 0">Choose a PIN only you know (6-12 digits). It is what you type to sign in.</p><div class="grid"><div><label>Current PIN</label><input id="mp0" type="password" inputmode="numeric" autocomplete="current-password"></div>
+   <div><label>New PIN</label><input id="mp1" type="password" inputmode="numeric" autocomplete="new-password"></div></div><div style="margin-top:8px"><button class="btn" id="mpOk">Change my PIN</button></div></div>
+  <div class="card"><b>WhatsApp</b><p style="color:var(--mut)">On a ticket, <i>WhatsApp customer</i> opens WhatsApp with the message ready for you to send. Numbers that start with 0 are converted using this country code on this device:</p>
+  <div class="flex"><input id="wa_cc" style="width:100px" value="${esc(localStorage.getItem('hd_cc')||'27')}"><span style="color:var(--mut)">27 = South Africa</span><button class="btn" id="wa_save">Save</button></div></div>`;
+  $('#wa_save').onclick=()=>{localStorage.setItem('hd_cc',($('#wa_cc').value||'27').replace(/\D/g,''));toast('Saved')};
+  $('#mpOk').onclick=async()=>{try{await api('/me/pin','POST',{current:$('#mp0').value,pin:$('#mp1').value});toast('PIN changed');$('#mp0').value=$('#mp1').value=''}catch(e){}};
+}
+async function setAgents(el){
+  await refreshAgents();
+  el.innerHTML=`<div class="card"><div class="flex"><b class="sp">Agents &amp; PINs</b><button class="btn" id="agentAdd">+ Add agent</button></div>
+  <table style="margin-top:8px"><tr><th>Name</th><th>Email</th><th>Role</th><th>WhatsApp</th><th>PIN</th><th></th></tr>${S.agents.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td>${esc(a.role)}</td><td>${a.phone?esc(a.phone):'<span style="color:var(--amb)">add number</span>'}</td><td>${a.has_pin?(a.must_change?'<span style="color:var(--amb)">temporary - not yet changed</span>':'set by user'):'<span style="color:var(--red)">none - cannot sign in</span>'}</td>
+  <td style="white-space:nowrap"><button class="btn sec" data-ae="${a.id}">Edit</button> <button class="btn sec" data-ad="${a.id}">Delete</button></td></tr>`).join('')}</table>
+  <p style="color:var(--mut);margin:8px 0 0">Each agent signs in with their own PIN. A PIN you set is temporary: they choose their own at first sign-in. PINs are stored scrambled, so they can't be shown again - use Edit &rarr; Generate to give someone a new one.</p></div>`;
+  $('#agentAdd').onclick=()=>agentModal();
+  el.onclick=async e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.ae)agentModal(S.agents.find(a=>a.id==b.dataset.ae));
+    if(b.dataset.ad){const a=S.agents.find(x=>x.id==b.dataset.ad);if(!confirm('Delete '+a.name+'? Their tickets become unassigned.'))return;
+      const r=await api('/agents/'+a.id,'DELETE');toast('Deleted - '+r.unassigned_tickets+' ticket(s) unassigned');await refreshAgents();loadSettings('agents');loadSide();loadList()}};
+}
+const DAYN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SA_HOLIDAYS=['2026-12-16','2026-12-25','2027-01-01','2027-03-22','2027-03-26','2027-03-29','2027-04-27','2027-06-16','2027-08-09','2027-09-24','2027-12-16','2027-12-27'];
+async function setSla(el){
+  const [sla,h]=await Promise.all([api('/sla'),api('/hours')]);
+  el.innerHTML=`<div class="card"><b>Service targets (SLA)</b><p style="color:var(--mut);margin:4px 0">How quickly a ticket should get a first answer and be solved, by priority. Tickets past the target show as overdue.</p>
+  <table style="margin-top:8px"><tr><th>Priority</th><th>First response within (hours)</th><th>Solved within (hours)</th></tr>${sla.map(s=>`<tr><td>${PR[s.priority]}</td>
+   <td><input class="sl_fr" data-p="${s.priority}" type="number" min="0.1" step="0.25" value="${+(s.first_response_mins/60).toFixed(2)}" style="width:110px"></td>
+   <td><input class="sl_rs" data-p="${s.priority}" type="number" min="0.1" step="0.25" value="${+(s.resolution_mins/60).toFixed(2)}" style="width:110px"></td></tr>`).join('')}</table></div>
+  <div class="card"><label style="display:flex;gap:10px;align-items:flex-start;margin:0;cursor:pointer"><input type="checkbox" id="bh_on" ${h.enabled?'checked':''} style="width:20px;height:20px;flex:none;margin-top:2px">
+   <span><b>Only count working hours</b><br><span style="color:var(--mut);font-size:13px">The clock stops after hours, on weekends and on public holidays. A ticket logged on Friday evening is then not "overdue" on Monday morning. Switched off = the clock runs 24/7.</span></span></label>
+  <div id="bh_box" style="margin-top:10px;${h.enabled?'':'opacity:.5'}">
+   ${DAYN.map((n,i)=>{const d=h.days[i];return `<div class="flex" style="margin:4px 0"><label style="width:120px;margin:0;display:flex;gap:8px;align-items:center"><input type="checkbox" class="bh_d" data-i="${i}" ${d?'checked':''} style="width:18px;height:18px">${n}</label>
+    <input type="time" class="bh_s" data-i="${i}" value="${d?d[0]:'08:00'}" style="width:130px"> <span>to</span> <input type="time" class="bh_e" data-i="${i}" value="${d?d[1]:'17:00'}" style="width:130px"></div>`}).join('')}
+   <div class="grid" style="margin-top:10px"><div><label>Time zone (hours from UTC; South Africa = 2)</label><input id="bh_tz" type="number" step="0.5" value="${h.utc_offset_mins/60}"></div></div>
+   <label>Public holidays (one date per line, like 2026-12-25)</label><textarea id="bh_hol" rows="5" placeholder="2026-12-25">${esc((h.holidays||[]).join('\n'))}</textarea>
+   <button class="btn sec" type="button" id="bh_sa" style="margin-top:4px">Add South African public holidays (to end of 2027)</button>
+   <span style="color:var(--mut);font-size:12px"> please check against the official list</span></div>
+  <label style="display:flex;gap:10px;margin:14px 0 0;cursor:pointer"><input type="checkbox" id="bh_re" checked style="width:20px;height:20px;flex:none"><span>Also recalculate the due dates of tickets that are still open</span></label>
+  <div style="margin-top:12px"><button class="btn" id="slaSave">Save</button></div></div>`;
+  $('#bh_on').onchange=e=>{$('#bh_box').style.opacity=e.target.checked?'':'.5'};
+  $('#bh_sa').onclick=()=>{const cur=new Set($('#bh_hol').value.split('\n').map(x=>x.trim()).filter(Boolean));SA_HOLIDAYS.forEach(x=>cur.add(x));$('#bh_hol').value=[...cur].sort().join('\n')};
+  $('#slaSave').onclick=async()=>{
+    const pol={};el.querySelectorAll('.sl_fr').forEach(i=>{const p=i.dataset.p;pol[p]={first_response_mins:Math.round(+i.value*60),resolution_mins:Math.round(+el.querySelector('.sl_rs[data-p="'+p+'"]').value*60)}});
+    const days={};el.querySelectorAll('.bh_d').forEach(c=>{const i=c.dataset.i;days[i]=c.checked?[el.querySelector('.bh_s[data-i="'+i+'"]').value,el.querySelector('.bh_e[data-i="'+i+'"]').value]:null});
+    try{await api('/sla','PUT',{policies:pol});
+      const r=await api('/hours','PUT',{enabled:$('#bh_on').checked,utc_offset_mins:Math.round(+$('#bh_tz').value*60),days,holidays:$('#bh_hol').value.split('\n').map(x=>x.trim()).filter(Boolean),recalculate:$('#bh_re').checked});
+      toast('Saved'+(r.recalculated?' - '+r.recalculated+' open ticket(s) updated':''));loadList();loadSide()}catch(e){}};
+}
+async function setAdv(el){
+  const c=await api('/config');
+  el.innerHTML=`<div class="card"><b>Network access</b><p>Others on your network can open: ${c.lan_urls.map(u=>`<code>${esc(u)}</code>`).join(' ')||'(none found)'} - or the public address if enabled. Everyone signs in with their own PIN.</p></div>
+  <div class="card"><b>Try an incoming email</b> <span style="color:var(--mut)">(test without a mailbox; put “[#12]” in the subject to add to ticket 12)</span>
+  <div class="grid"><div><label>From</label><input id="s_from" value="customer@example.com"></div><div><label>Name</label><input id="s_name" value="Test Customer"></div></div>
+  <label>Subject</label><input id="s_subj" value="Help with my order"><label>Message</label><textarea id="s_body">Hello, I need some help please.</textarea>
+  <div style="margin-top:8px"><button class="btn" id="simGo">Receive email</button></div></div>
+  <p style="color:var(--mut)">Database file: <code>${esc(c.db)}</code></p>`;
+  $('#simGo').onclick=async()=>{const r=await api('/inbound/simulate','POST',{from:$('#s_from').value,name:$('#s_name').value,subject:$('#s_subj').value,body:$('#s_body').value});toast('Ticket #'+r.ticket_id+' created or updated');loadSide()};
+}
+/* ----- mailboxes ----- */
+const MB_PRESETS={gmail:{label:'Gmail / Google Workspace',smtp_host:'smtp.gmail.com',smtp_port:465,smtp_security:'ssl',imap_host:'imap.gmail.com',imap_port:993,note:'Gmail needs an <b>app password</b> (Google account &rarr; Security &rarr; 2-Step Verification &rarr; App passwords), not your normal password.'},
+ m365:{label:'Microsoft 365 / Outlook',smtp_host:'smtp.office365.com',smtp_port:587,smtp_security:'starttls',imap_host:'outlook.office365.com',imap_port:993,note:'Your Microsoft 365 admin must allow IMAP and SMTP sign-in for this mailbox; an app password may be needed.'},
+ own:{label:'My own domain / web hosting',smtp_host:'',smtp_port:465,smtp_security:'ssl',imap_host:'',imap_port:993,note:'Your hosting provider shows the server names, usually <code>mail.yourdomain.com</code>.'},
+ custom:{label:'Something else',smtp_host:'',smtp_port:587,smtp_security:'starttls',imap_host:'',imap_port:993,note:''}};
+async function setMail(el){
+  const mbs=await api('/mailboxes');
+  const chip=(ok,t)=>`<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:${ok?'#d3f1de':'var(--line)'};color:${ok?'#1e6b3a':'var(--mut)'}">${t}</span>`;
+  el.innerHTML=`<div class="flex"><div class="sp"><b>Mailboxes</b><div style="color:var(--mut)">Connect your support email address so customer emails become tickets and replies are emailed back.</div></div><button class="btn" id="mbAdd">+ Add mailbox</button></div>
+  ${mbs.map(m=>`<div class="card" style="margin-top:10px"><div class="flex"><b class="sp">${esc(m.name)} <span style="font-weight:400;color:var(--mut)">${esc(m.address)}</span> ${m.is_default?chip(1,'default'):''} ${m.active?'':chip(0,'switched off')}</b></div>
+   <div style="margin:6px 0">${chip(m.can_send,m.can_send?'Sending set up':'Not sending')} ${chip(m.can_receive,m.can_receive?'Receiving set up':'Not receiving')}
+   ${m.last_poll?`<span style="color:var(--mut);font-size:12px"> · last checked ${ago(m.last_poll)} ago · ${m.ingested} email(s) received</span>`:''}</div>
+   ${m.last_error?`<div style="color:var(--red);font-size:13px">&#9888; ${esc(m.last_error)}</div>`:''}
+   <div class="actions" style="margin-top:8px"><button class="btn sec" data-me="${m.id}">Edit</button><button class="btn sec" data-mt="${m.id}">Send a test email</button>${m.can_receive?`<button class="btn sec" data-mp="${m.id}">Check for mail now</button>`:''}
+   ${m.is_default?'':`<button class="btn sec" data-md="${m.id}">Make default</button>`}<button class="btn sec" data-mx="${m.id}">Delete</button></div></div>`).join('')||`<div class="card" style="margin-top:10px;text-align:center;color:var(--mut)">No mailbox yet. Without one, replies are saved but not emailed, and customer emails don't arrive.<br><br><button class="btn" id="mbAdd2">+ Add your first mailbox</button></div>`}
+  <p style="color:var(--mut)">Tickets that arrive by email are answered from the mailbox they came in on. Everything else uses the default mailbox. Passwords are kept on this PC only and never shown again.</p>`;
+  const add=()=>mailboxModal();$('#mbAdd').onclick=add;if($('#mbAdd2'))$('#mbAdd2').onclick=add;
+  el.onclick=async e=>{const b=e.target.closest('button[data-me],[data-mt],[data-mp],[data-md],[data-mx]');if(!b)return;const d=b.dataset,id=+(d.me||d.mt||d.mp||d.md||d.mx),m=mbs.find(x=>x.id===id);
+    if(d.me)mailboxModal(m);
+    if(d.mt)modal(`<h3 style="margin-top:0">Send a test email</h3><p>From <b>${esc(m.address)}</b> to:</p><input id="mt_to" type="email" placeholder="your own email address" value="${esc(S.meEmail||'')}"><div id="mt_r" style="margin:8px 0;min-height:1.4em"></div>
+      <div class="flex"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="mt_go">Send test</button></div>`)||($('#mt_go').onclick=async()=>{$('#mt_r').textContent='Sending…';
+      try{const r=await api('/mailboxes/'+id+'/send-test','POST',{to:$('#mt_to').value});$('#mt_r').innerHTML=r.ok?'<span style="color:var(--grn,#16a34a)">&#10003; '+esc(r.message)+'</span>':'<span style="color:var(--red)">'+esc(r.message)+'</span>'}catch(e){$('#mt_r').textContent=''}});
+    if(d.mp){toast('Checking…');const r=await api('/inbound/poll','POST',{});toast(r.error?'Problem: '+r.error:'Done - '+r.ingested+' new email(s)');loadSettings('mail')}
+    if(d.md){await api('/mailboxes/'+id,'PATCH',{is_default:1});loadSettings('mail')}
+    if(d.mx&&confirm('Delete mailbox "'+m.name+'"? Existing tickets are kept.')){await api('/mailboxes/'+id,'DELETE');loadSettings('mail')}};
+}
+function mailboxModal(m){
+  const v=(k,dflt)=>esc(m?(m[k]??dflt??''):(dflt??''));
+  modal(`<h3 style="margin-top:0">${m?'Edit':'Add'} mailbox</h3>
+  ${m?'':`<label>What email service do you use?</label><select id="mb_pre">${Object.entries(MB_PRESETS).map(([k,p])=>`<option value="${k}">${p.label}</option>`).join('')}</select><div id="mb_note" style="color:var(--mut);font-size:13px;margin:4px 0 8px"></div>`}
+  <div class="grid"><div><label>Name (for you)</label><input id="mb_name" value="${v('name','Support')}"></div><div><label>Email address</label><input id="mb_addr" type="email" value="${v('address')}" placeholder="support@yourcompany.com"></div></div>
+  <label>Sender name customers see (optional)</label><input id="mb_from" value="${v('from_name')}" placeholder="e.g. Acme Support">
+  <fieldset style="border:1px solid var(--line);border-radius:8px;margin:12px 0;padding:8px 12px"><legend><b>Outgoing mail (SMTP)</b></legend>
+   <div class="grid"><div><label>Server</label><input id="mb_sh" value="${v('smtp_host')}" placeholder="smtp.example.com"></div><div><label>Port</label><input id="mb_sp" inputmode="numeric" value="${v('smtp_port',465)}"></div></div>
+   <label>Security</label><select id="mb_ss">${opts([['ssl','SSL/TLS (usually port 465)'],['starttls','STARTTLS (usually port 587)'],['none','None (not recommended)']],m?.smtp_security||'ssl')}</select>
+   <div class="grid"><div><label>User name <span style="color:var(--mut)">(blank = email address)</span></label><input id="mb_su" value="${v('smtp_user')}" autocomplete="off"></div><div><label>Password</label><input id="mb_spw" type="password" autocomplete="new-password" placeholder="${m?.has_smtp_password?'unchanged':''}"></div></div>
+   <div class="flex" style="margin-top:8px"><button class="btn sec" type="button" id="mb_ts">Test sending</button><span id="mb_rs" style="font-size:13px"></span></div></fieldset>
+  <fieldset style="border:1px solid var(--line);border-radius:8px;margin:12px 0;padding:8px 12px"><legend><b>Incoming mail (IMAP)</b> <span style="color:var(--mut);font-weight:400">- optional</span></legend>
+   <div class="grid"><div><label>Server</label><input id="mb_ih" value="${v('imap_host')}" placeholder="imap.example.com"></div><div><label>Port</label><input id="mb_ip" inputmode="numeric" value="${v('imap_port',993)}"></div></div>
+   <label><input type="checkbox" id="mb_issl" style="width:auto" ${(m?m.imap_ssl:1)?'checked':''}> Use SSL/TLS (recommended)</label>
+   <div class="grid"><div><label>User name <span style="color:var(--mut)">(blank = email address)</span></label><input id="mb_iu" value="${v('imap_user')}" autocomplete="off"></div><div><label>Password</label><input id="mb_ipw" type="password" autocomplete="new-password" placeholder="${m?.has_imap_password?'unchanged':'blank = same as outgoing'}"></div></div>
+   <div class="grid"><div><label>Folder to watch</label><input id="mb_if" value="${v('imap_folder','INBOX')}"></div><div><label>Check every (minutes)</label><input id="mb_pi" inputmode="numeric" value="${Math.round((m?.poll_seconds||60)/60)||1}"></div></div>
+   <div class="flex" style="margin-top:8px"><button class="btn sec" type="button" id="mb_ti">Test receiving</button><span id="mb_ri" style="font-size:13px"></span></div></fieldset>
+  <label><input type="checkbox" id="mb_act" style="width:auto" ${(m?m.active:1)?'checked':''}> This mailbox is switched on</label>
+  <div class="flex" style="margin-top:14px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="mb_ok">Save mailbox</button></div>`);
+  const g=id=>$('#'+id).value.trim();
+  const form=()=>{const d={name:g('mb_name'),address:g('mb_addr'),from_name:g('mb_from'),smtp_host:g('mb_sh'),smtp_port:g('mb_sp'),smtp_security:$('#mb_ss').value,smtp_user:g('mb_su'),
+    imap_host:g('mb_ih'),imap_port:g('mb_ip'),imap_ssl:$('#mb_issl').checked?1:0,imap_user:g('mb_iu'),imap_folder:g('mb_if')||'INBOX',poll_seconds:Math.max(1,+g('mb_pi')||1)*60,active:$('#mb_act').checked?1:0};
+    const sp=$('#mb_spw').value,ip=$('#mb_ipw').value;if(sp)d.smtp_password=sp;d.imap_password=ip||(m?'':sp);if(!d.imap_password)delete d.imap_password;return d};
+  const preset=k=>{const p=MB_PRESETS[k];$('#mb_sh').value=p.smtp_host;$('#mb_sp').value=p.smtp_port;$('#mb_ss').value=p.smtp_security;$('#mb_ih').value=p.imap_host;$('#mb_ip').value=p.imap_port;$('#mb_note').innerHTML=p.note};
+  if(!m){$('#mb_pre').onchange=e=>preset(e.target.value);preset('gmail')}
+  const test=(which,out)=>async()=>{const d=form();d.which=which;if(m)d.id=m.id;$(out).style.color='';$(out).textContent='Testing…';
+    try{const r=await api('/mailboxes/test','POST',d);$(out).style.color=r.ok?'#16a34a':'var(--red)';$(out).textContent=(r.ok?'✓ ':'')+r.message}catch(e){$(out).textContent=''}};
+  $('#mb_ts').onclick=test('smtp','#mb_rs');$('#mb_ti').onclick=test('imap','#mb_ri');
+  $('#mb_ok').onclick=async()=>{const d=form();if(!d.address.includes('@'))return toast('Enter the email address of the mailbox',true);
+    try{m?await api('/mailboxes/'+m.id,'PATCH',d):await api('/mailboxes','POST',d);closeModal();toast('Mailbox saved');loadSettings('mail')}catch(e){}};
+}
+/* ----- notifications ----- */
+async function setNotify(el){
+  const [cfg,mbs,log]=await Promise.all([api('/notifications'),api('/mailboxes'),api('/maillog')]);
+  const canSend=mbs.some(m=>m.active&&m.can_send);
+  const group=(who,title)=>`<h4 style="margin:14px 0 4px">${title}</h4>`+cfg.events.filter(e=>e.to===who).map(e=>`<div class="nrow" data-k="${e.key}" style="border-top:1px solid var(--line);padding:8px 0">
+    <label style="display:flex;gap:10px;align-items:flex-start;margin:0;cursor:pointer"><input type="checkbox" class="n_on" ${e.enabled?'checked':''} style="width:20px;height:20px;margin-top:2px;flex:none">
+     <span class="sp"><b>${esc(e.label)}</b><br><span style="color:var(--mut);font-size:13px">${esc(e.help)}</span></span></label>
+    ${e.editable?`<details style="margin:6px 0 0 30px"><summary style="font-weight:400;color:var(--acc)">Edit the email text</summary><label>Subject</label><input class="n_sub" value="${esc(e.subject)}"><label>Message</label><textarea class="n_body" rows="6">${esc(e.body)}</textarea>
+     <button class="btn sec n_reset" type="button" style="margin-top:6px">Put back the original text</button></details>`:''}</div>`).join('');
+  el.innerHTML=`<div class="card"><b>Email notifications</b><p style="color:var(--mut);margin:4px 0">Tick when the helpdesk should send an email. Nothing is sent for an unticked event.</p>
+  ${canSend?'':'<div style="background:#fff4d6;color:#7a5d00;padding:8px 12px;border-radius:8px;margin:8px 0">&#9888; No mailbox can send email yet, so nothing will be emailed. <a href="#" id="goMail">Set up a mailbox</a></div>'}
+  ${group('customer','Emails to your customers')}${group('agent','Emails to your agents')}
+  <label style="display:flex;gap:10px;margin:14px 0 0;cursor:pointer"><input type="checkbox" id="n_link" ${cfg.include_link?'checked':''} style="width:20px;height:20px;flex:none"><span>Add a link to the customer's ticket page in the emails <span style="color:var(--mut)">(they can follow progress and reply without signing in)</span></span></label>
+  <div style="margin-top:12px"><button class="btn" id="nSave">Save</button></div>
+  <p style="color:var(--mut);font-size:13px">You can use these in the text: ${cfg.placeholders.map(p=>`<code>${esc(p)}</code>`).join(' ')}. Private notes are never emailed to customers.</p></div>
+  <div class="card"><b>Recent emails sent</b><table style="margin-top:8px"><tr><th>When</th><th>Ticket</th><th>For</th><th>To</th><th>Result</th></tr>${log.map(l=>`<tr><td>${ago(l.created_at)} ago</td><td>${l.ticket_id?'<a href="#" data-tk="'+l.ticket_id+'">#'+l.ticket_id+'</a>':''}</td><td>${esc(l.event)}</td><td>${esc(l.to_addr)}</td>
+   <td style="color:${l.status==='sent'?'#16a34a':'var(--red)'}">${esc(l.status)}</td></tr>`).join('')||'<tr><td colspan="5" style="color:var(--mut)">Nothing sent yet.</td></tr>'}</table></div>`;
+  el.querySelectorAll('[data-tk]').forEach(a=>a.onclick=e=>{e.preventDefault();show('tickets');openTicket(+a.dataset.tk)});
+  if($('#goMail'))$('#goMail').onclick=e=>{e.preventDefault();loadSettings('mail')};
+  el.querySelectorAll('.n_reset').forEach(b=>b.onclick=()=>{const k=b.closest('.nrow').dataset.k,e=cfg.events.find(x=>x.key===k);b.closest('.nrow').querySelector('.n_sub').value=e.default_subject;b.closest('.nrow').querySelector('.n_body').value=e.default_body});
+  $('#nSave').onclick=async()=>{const events={};el.querySelectorAll('.nrow').forEach(r=>{events[r.dataset.k]={enabled:r.querySelector('.n_on').checked,subject:r.querySelector('.n_sub')?.value||'',body:r.querySelector('.n_body')?.value||''}});
+    await api('/notifications','PUT',{events,include_link:$('#n_link').checked});toast('Saved')};
+}
+function pinReveal(name,pin){
+  modal(`<h3 style="margin-top:0">PIN for ${esc(name)}</h3><p>Give this PIN to ${esc(name)} now. It is stored scrambled and <b>cannot be shown again</b>. They will choose their own PIN the first time they sign in.</p>
+  <div style="font-size:32px;letter-spacing:6px;text-align:center;background:var(--bg,#f4f5f7);border-radius:10px;padding:14px;margin:10px 0;font-weight:700">${esc(pin)}</div>
+  <div class="flex"><span class="sp"></span><button class="btn sec" id="pcCopy">Copy PIN</button><button class="btn" onclick="closeModal()">Done</button></div>`);
+  $('#pcCopy').onclick=async()=>{try{await navigator.clipboard.writeText(pin);toast('Copied')}catch(e){toast('Select the PIN and copy it',true)}};
+}
+async function refreshAgents(){
+  S.agents=await api('/agents');
+}
+function agentModal(a){
+  modal(`<h3 style="margin-top:0">${a?'Edit':'Add'} agent</h3><label>Name</label><input id="ag_n" value="${esc(a?.name||'')}">
+   <label>Email</label><input id="ag_e" type="email" value="${esc(a?.email||'')}"><label>WhatsApp number (tickets assigned to them can be sent here)</label><input id="ag_ph" type="tel" value="${esc(a?.phone||'')}" placeholder="e.g. 082 123 4567"><label>Role</label><select id="ag_r">${opts(['agent','supervisor','admin'].map(x=>[x,x]),a?.role||'agent')}</select>
+   <label>${a?'Reset PIN (they will choose a new one at next sign-in) - leave empty to keep it':'Temporary sign-in PIN (6-12 digits) - they choose their own at first sign-in'}</label>
+   <div class="flex"><input id="ag_p" inputmode="numeric" autocomplete="off" placeholder="${a?'unchanged':'e.g. 482915'}"><button class="btn sec" type="button" id="ag_gen">Generate</button></div>
+   <div class="flex" style="margin-top:14px"><span class="sp"></span><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="ag_ok">Save</button></div>`);
+  $('#ag_gen').onclick=()=>{$('#ag_p').value=String(Math.floor(Math.random()*900000)+100000)};
+  $('#ag_ok').onclick=async()=>{const d={name:$('#ag_n').value,email:$('#ag_e').value,role:$('#ag_r').value,phone:$('#ag_ph').value};const pin=$('#ag_p').value.trim();if(pin)d.pin=pin;
+    try{const r=a?await api('/agents/'+a.id,'PATCH',d):await api('/agents','POST',d);closeModal();
+      if(r.pin)pinReveal(d.name,r.pin);else toast('Saved');
+      await refreshAgents();loadSettings('agents');loadSide();loadList()}catch(e){}};
+}
+const waNumber=p=>{let d=String(p||'').trim();if(d.startsWith('+'))return d.replace(/\D/g,'');d=d.replace(/\D/g,'');if(d.startsWith('00'))return d.slice(2);
+  if(d.startsWith('0'))return (localStorage.getItem('hd_cc')||'27')+d.slice(1);return d};
+const IC={wa:'<svg class="ico" viewBox="0 0 24 24" fill="#25d366"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/><path fill="#fff" d="M8.5 7.5c-.4 0-.9.3-1 1-.2 1.5.7 3.200 2 4.600 1.400 1.400 3 2.300 4.500 2.100.7-.1 1.200-.7 1.200-1.200l-.1-.5-1.700-.8-.5.200-.5.600c-1-.4-2-1.400-2.400-2.400l.6-.5.200-.5-.8-1.800z"/></svg>',mail:'<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',link:'<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a4 4 0 0 0 5.600 0l3-3a4 4 0 0 0-5.600-5.600l-1 1"/><path d="M14 10a4 4 0 0 0-5.600 0l-3 3a4 4 0 0 0 5.600 5.600l1-1"/></svg>'};
+const waOpen=(n,text)=>window.open('https://wa.me/'+n+'?text='+encodeURIComponent(text),'_blank','noopener');
+const ticketLink=id=>(S.publicUrl||(location.origin+BASE))+'/#t'+id;
+const custLink=t=>(S.publicUrl||location.origin)+'/t/'+t.access_token;
+function ticketText(t,thread,noLink){
+  let s=`Ticket #${t.id}: ${t.subject}\n${noLink?'':'Link: '+ticketLink(t.id)+'\n'}Status: ${ST[t.status]} | Priority: ${PR[t.priority]} | Agent: ${t.responder_name||'Unassigned'}\nRequester: ${t.requester_name} <${t.requester_email}>${t.requester_phone?' '+t.requester_phone:''}\nCreated: ${fdate(t.created_at)}`;
+  if(thread){const m=t.conversations.filter(c=>!c.private).slice(-3);
+    if(m.length)s+='\n\nRecent messages:\n'+m.map(c=>`[${fdate(c.created_at)}] ${c.kind==='incoming'?(c.contact_name||c.from_email):(c.agent_name||'Agent')}: ${c.body}`).join('\n\n')}
+  return s;
+}
+function mailto(to,subject,body){
+  if(body.length>1500)body=body.slice(0,1500)+'…';
+  const u='mailto:'+encodeURIComponent(to).replace(/%40/g,'@')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body.replace(/\n/g,'\r\n'));
+  const a=document.createElement('a');a.href=u;document.body.appendChild(a);a.click();a.remove();toast('Opening your default email app…');
+}
+boot();
+setInterval(()=>{if($('#v-tickets').classList.contains('on')){loadSide();loadList()}},30000);
+</script></body></html>

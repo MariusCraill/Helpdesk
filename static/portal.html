@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Support portal</title>
+<style>:root{--bg:#f4f6f9;--p:#fff;--ink:#1d2733;--mut:#6b7785;--line:#e3e8ee;--acc:#2563eb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--p:#18202a;--ink:#e6ebf1;--mut:#8a97a6;--line:#27323f;--acc:#3b82f6}}
+body{margin:0;font:15px/1.5 system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}.w{max-width:760px;margin:0 auto;padding:24px 16px}
+.c{background:var(--p);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+input,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--p);color:var(--ink);font:inherit;margin:4px 0 10px;box-sizing:border-box}
+button{background:var(--acc);color:#fff;border:0;border-radius:6px;padding:9px 16px;font:inherit;cursor:pointer}summary{cursor:pointer;font-weight:600;padding:6px 0}h1{margin-top:0}</style></head>
+<body><div class="w"><h1>How can we help?</h1>
+<div class="c"><h3 style="margin-top:0">Search help articles</h3><input id="s" placeholder="Search…"><div id="arts"></div></div>
+<div class="c"><h3 style="margin-top:0">Submit a request</h3><div id="done" style="display:none;color:#16a34a;font-weight:600"></div>
+<form id="f"><label>Your email *</label><input id="e" type="email" required><label>Your name</label><input id="n">
+<label>Subject *</label><input id="sub" required autocomplete="off"><div id="sug" style="display:none;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:-4px 0 10px"></div><label>Describe the problem</label><textarea id="d" rows="5"></textarea><div style="margin-bottom:10px"><label for="fi" style="display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--acc)">&#128206; Attach a photo or file (optional)</label><input type="file" id="fi" multiple hidden><div id="fl" style="font-size:13px;color:var(--mut);margin-top:4px"></div></div><button>Submit request</button></form></div></div>
+<script>
+const BASE=(location.pathname.match(/^\/helpdesk(?=\/|$)/i)||[''])[0];const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let A=[];
+function draw(){const q=document.getElementById('s').value.toLowerCase();document.getElementById('arts').innerHTML=A.filter(a=>(a.title+a.body).toLowerCase().includes(q))
+ .map(a=>`<details><summary>${esc(a.title)}</summary><p style="white-space:pre-wrap;color:var(--mut)">${esc(a.body)}</p></details>`).join('')||'<p style="color:var(--mut)">No matching articles.</p>'}
+fetch(BASE+'/api/portal/articles').then(r=>r.json()).then(a=>{A=a;draw()});document.getElementById('s').oninput=draw;
+let pending=[];const readFile=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({name:f.name,type:f.type||'application/octet-stream',size:f.size,data:String(r.result).split(',')[1]||''});r.onerror=()=>no(r.error);r.readAsDataURL(f)});
+const drawF=()=>{document.getElementById('fl').innerHTML=pending.map((f,i)=>esc(f.name)+' <a href="#" data-i="'+i+'">remove</a>').join('<br>')};
+document.getElementById('fl').onclick=e=>{const a=e.target.closest('a');if(a){e.preventDefault();pending.splice(+a.dataset.i,1);drawF()}};
+document.getElementById('fi').onchange=async e=>{for(const f of e.target.files){if(f.size>5*1048576){alert(f.name+' is bigger than 5 MB');continue}if(pending.length>=3){alert('At most 3 files');break}pending.push(await readFile(f))}e.target.value='';drawF()};
+let sugT;document.getElementById('sub').oninput=ev=>{clearTimeout(sugT);const v=ev.target.value.trim(),box=document.getElementById('sug');if(v.length<4){box.style.display='none';return}
+ sugT=setTimeout(async()=>{try{const r=await (await fetch(BASE+'/api/portal/suggest?q='+encodeURIComponent(v))).json();
+  box.style.display=r.length?'block':'none';box.innerHTML='<b style="font-size:13px">These articles might already answer your question:</b>'+r.map(a=>`<details><summary>${esc(a.title)}</summary><p style="white-space:pre-wrap;color:var(--mut)">${esc(a.body)}</p></details>`).join('')}catch(e){}},350)};
+document.getElementById('f').onsubmit=async ev=>{ev.preventDefault();const r=await fetch(BASE+'/api/portal/ticket',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({requester_email:e.value,requester_name:n.value,subject:sub.value,description:d.value,attachments:pending.map(x=>({name:x.name,type:x.type,data:x.data}))})});const j=await r.json();
+ if(r.ok){f.reset();pending=[];drawF();done.style.display='block';done.innerHTML='Thanks! Your request #'+j.id+' has been received.<br><a href="'+BASE+j.path+'">Open your ticket page</a> <span style="font-weight:400;color:var(--mut)">(bookmark it to follow replies - no sign-in needed)</span>'}else alert(j.error)};
+</script></body></html>

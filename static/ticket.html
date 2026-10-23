@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Your support ticket</title>
+<style>:root{--bg:#f5f7f9;--p:#fff;--ink:#12344d;--mut:#6b7c8c;--line:#e4e9ee;--acc:#2c5cc5;--me:#eaf2ff}
+@media(prefers-color-scheme:dark){:root{--bg:#0f151c;--p:#161e27;--ink:#e3eaf1;--mut:#8797a7;--line:#263340;--acc:#5b8def;--me:#1c2c47}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.w{max-width:720px;margin:0 auto;padding:20px 16px 40px}h1{font-size:20px;margin:0 0 4px}.meta{color:var(--mut);font-size:13px;margin-bottom:14px}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--me);color:var(--acc);font-weight:600;font-size:12px}
+.m{border:1px solid var(--line);background:var(--p);border-radius:10px;padding:10px 12px;margin:10px 0;white-space:pre-wrap;word-wrap:break-word}
+.m.mine{background:var(--me);margin-left:28px}.m:not(.mine){margin-right:28px}.h{font-size:12px;color:var(--mut);margin-bottom:4px;display:flex;justify-content:space-between;gap:8px}
+textarea{width:100%;min-height:100px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--p);color:var(--ink);font:inherit}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 18px;font:inherit;cursor:pointer;margin-top:8px}.err{color:#d93025;margin-top:8px}
+.att{display:inline-block;margin:6px 6px 0 0;padding:3px 10px;border:1px solid var(--line);border-radius:14px;font-size:12px;text-decoration:none;color:var(--acc);background:var(--p);white-space:normal}.att i{font-style:normal;color:var(--mut)}.att b{cursor:pointer;margin-left:6px}
+.fl{display:inline-block;margin-top:8px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--acc);background:var(--p)}
+.note{color:var(--mut);font-size:12px;margin-top:20px}</style></head>
+<body><div class="w" id="w"><p style="color:var(--mut)">Loading…</p></div>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fsize=n=>n<1024?n+' B':n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';
+const readFile=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({name:f.name,type:f.type||'application/octet-stream',size:f.size,data:String(r.result).split(',')[1]||''});r.onerror=()=>no(r.error);r.readAsDataURL(f)});
+let pending=[];
+const BASE=(location.pathname.match(/^\/helpdesk(?=\/|$)/i)||[''])[0];const token=location.pathname.split('/').filter(Boolean).pop()||'';
+async function load(){
+  const r=await fetch(BASE+'/api/portal/ticket/'+encodeURIComponent(token));const j=await r.json().catch(()=>({}));
+  if(!r.ok){document.getElementById('w').innerHTML='<h1>Ticket not found</h1><p style="color:var(--mut)">'+esc(j.error||'This link is not valid.')+'</p>';return}
+  document.title='Ticket #'+j.id+' - '+j.subject;
+  document.getElementById('w').innerHTML=`<h1>${esc(j.subject)}</h1><div class="meta">Ticket #${j.id} · <span class="chip">${esc(j.status_name)}</span> · opened ${new Date(j.created_at).toLocaleString()}</div>
+  ${j.messages.map(m=>`<div class="m ${m.mine?'mine':''}"><div class="h"><b>${m.mine?'You':esc(m.from)}</b><span>${new Date(m.created_at).toLocaleString()}</span></div>${esc(m.body)}${(m.attachments||[]).map(a=>`<div><a class="att" target="_blank" rel="noopener" href="${BASE}/api/portal/ticket/${encodeURIComponent(token)}/file/${a.id}">&#128206; ${esc(a.filename)} <i>${fsize(a.size)}</i></a></div>`).join('')}</div>`).join('')}
+  <h3 style="margin-bottom:4px">Add a reply</h3><textarea id="b" placeholder="Write your message…"></textarea><div><label class="fl" for="fi">&#128206; Attach a photo or file</label><input type="file" id="fi" multiple hidden><span id="fl"></span></div><div class="err" id="e"></div><button id="s">Send</button>
+  <div class="note">Keep this link private - anyone with it can see this ticket. No sign-in needed.</div>`;
+  pending=[];const draw=()=>{document.getElementById('fl').innerHTML=pending.map((f,i)=>`<span class="att">${esc(f.name)} <i>${fsize(f.size)}</i><b data-i="${i}">&times;</b></span>`).join('')};
+  document.getElementById('fl').onclick=e=>{const b=e.target.closest('b');if(b){pending.splice(+b.dataset.i,1);draw()}};
+  document.getElementById('fi').onchange=async e=>{for(const f of e.target.files){if(f.size>5*1048576){document.getElementById('e').textContent=f.name+' is bigger than 5 MB';continue}
+    if(pending.length>=3){document.getElementById('e').textContent='At most 3 files at a time';break}document.getElementById('e').textContent='';pending.push(await readFile(f))}e.target.value='';draw()};
+  document.getElementById('s').onclick=async()=>{const b=document.getElementById('b').value.trim();if(!b&&!pending.length)return;
+    const r=await fetch(BASE+'/api/portal/ticket/'+encodeURIComponent(token)+'/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body:b,attachments:pending.map(f=>({name:f.name,type:f.type,data:f.data}))})});
+    if(r.ok)load();else document.getElementById('e').textContent=(await r.json().catch(()=>({}))).error||'Could not send'};
+}
+load();
+</script></body></html>

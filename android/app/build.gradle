@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+def buildNumber = (project.findProperty('vc') ?: '1').toString().toInteger()
+
+android {
+    namespace 'za.helpdesk.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'za.helpdesk.app'
+        minSdk 26
+        targetSdk 34
+        versionCode buildNumber
+        versionName "1.0.${buildNumber}"
+    }
+
+    // A fixed key kept in the (private) repo so every build is signed the same way
+    // and a new APK installs over the old one. Fine for sideloading your own app.
+    signingConfigs {
+        release {
+            storeFile file('helpdesk.keystore')
+            storePassword 'helpdesk-sideload'
+            keyAlias 'helpdesk'
+            keyPassword 'helpdesk-sideload'
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+}

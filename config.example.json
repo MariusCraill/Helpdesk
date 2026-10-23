@@ -1,0 +1,19 @@
+{
+  "imap": {
+    "host": "imap.example.com",
+    "port": 993,
+    "ssl": true,
+    "user": "support@example.com",
+    "password": "app-password-here",
+    "folder": "INBOX",
+    "poll_seconds": 60
+  },
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 465,
+    "ssl": true,
+    "user": "support@example.com",
+    "password": "app-password-here",
+    "from": "support@example.com"
+  }
+}
