@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -26,9 +26,18 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - uses: android-actions/setup-android@v3
+
       - name: Build release APK
         working-directory: android
-        run: gradle --no-daemon -Pvc=${{ github.run_number }} assembleRelease
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace -Pvc=${{ github.run_number }} assembleRelease 2>&1 | tee ../build.log
+
+      - name: Show why the build failed
+        if: failure()
+        run: |
+          echo "::error title=Gradle build log::$(grep -v '^$' build.log | tail -45 | head -c 3500 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
 
       - name: Name the file
         run: cp android/app/build/outputs/apk/release/app-release.apk Helpdesk.apk
