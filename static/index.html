@@ -125,13 +125,25 @@ body[data-view]:not([data-view=tickets]) #newBtn{display:none!important}
  #nav button.on{background:none}
 }
 @media(prefers-color-scheme:dark){#moreBtn{color:#9db0c2}}
+
+#nav button{position:relative}
+.bdg{display:none;position:absolute;top:1px;left:calc(50% + 4px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--red);color:#fff;font:700 10px/16px system-ui,sans-serif;text-align:center;font-style:normal}
+.bdg.on{display:block}.bdg.amb{background:var(--amb)}
+#newBanner{display:none;align-items:center;gap:10px;background:var(--acc);color:#fff;padding:10px 14px;cursor:pointer;flex:none;font-weight:500}
+#newBanner span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#nbX{font-size:22px;line-height:1;padding:0 4px}
+#ptr{height:0;overflow:hidden;text-align:center;color:var(--mut);font-size:12px;display:flex;align-items:center;justify-content:center;transition:height .15s}
+#list{overscroll-behavior-y:contain}
+.rw{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.rw .row{position:relative;background:var(--panel);border-bottom:0;transition:transform .18s;touch-action:pan-y}.rw .row.on{background:var(--sel)}.rw .row.drag{transition:none}
+.swa,.swb{position:absolute;top:0;bottom:0;width:50%;display:flex;align-items:center;color:#fff;font-weight:600;padding:0 20px}
+.swa{left:0;background:var(--acc)}.swb{right:0;background:var(--grn);justify-content:flex-end}
 </style></head><body>
 <div id="app">
 <aside id="rail">
   <div class="logo" title="Helpdesk"><svg viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></svg></div>
   <nav id="nav">
     <button data-v="dash" data-l="Home" title="Dashboard" aria-label="Dashboard"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4M7 16h.01M12 5v1M5 12h1M19 12h-1"/></svg></button>
-    <button data-v="tickets" class="on" data-l="Tickets" title="Tickets" aria-label="Tickets"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg></button>
+    <button data-v="tickets" class="on" data-l="Tickets" title="Tickets" aria-label="Tickets"><i class="bdg" id="tkBadge"></i><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg></button>
     <button data-v="tasks" data-l="Tasks" title="Tasks" aria-label="Tasks"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg></button>
     <button data-v="threads" data-l="Team" title="Team threads" aria-label="Team threads"><svg viewBox="0 0 24 24"><path d="M4 5h12v8H9l-3 3v-3H4z"/><path d="M18 9h2v8h-2v3l-3-3h-5v-2"/></svg></button>
     <button data-v="reports" class="mo" data-l="Reports" title="Reports" aria-label="Reports"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
@@ -147,9 +159,10 @@ body[data-view]:not([data-view=tickets]) #newBtn{display:none!important}
   <div id="crumb"></div><span class="sp"></span><span id="meName"></span>
   <button class="btn" id="newBtn">+ New ticket</button>
 </header>
+<div id="newBanner"><span id="nbText"></span><b id="nbX" aria-label="Dismiss">&times;</b></div>
 <main>
   <section class="view on" id="v-tickets" data-pane="list">
-    <div id="list"><div class="lhead"><svg viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></svg><select id="viewSel" aria-label="Ticket view"></select><span class="cnt" id="cnt"></span></div>
+    <div id="list"><div id="ptr"></div><div class="lhead"><svg viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></svg><select id="viewSel" aria-label="Ticket view"></select><span class="cnt" id="cnt"></span></div>
       <div class="search"><input id="q" placeholder="Search subject, #id, requester…"></div><div id="rows"></div></div>
     <div id="detail"><div class="empty">Select a ticket</div></div>
   </section>
@@ -185,7 +198,12 @@ const ST={2:'Open',3:'Pending',4:'Resolved',5:'Closed'},PR={1:'Low',2:'Medium',3
 const ago=iso=>{if(!iso)return'';const m=Math.round((Date.now()-new Date(iso))/6e4);if(m<1)return'now';if(m<60)return m+'m';if(m<1440)return Math.round(m/60)+'h';return Math.round(m/1440)+'d'};
 const fsize=n=>n<1024?n+' B':n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';
 const attHtml=l=>(l&&l.length)?'<div>'+l.map(a=>`<a class="att" target="_blank" rel="noopener" href="${BASE}/api/attachments/${a.id}">&#128206; ${esc(a.filename)} <i>${fsize(a.size)}</i></a>`).join('')+'</div>':'';
-const readFile=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({name:f.name,type:f.type||'application/octet-stream',size:f.size,data:String(r.result).split(',')[1]||''});r.onerror=()=>no(r.error);r.readAsDataURL(f)});
+const rawRead=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok({name:f.name,type:f.type||'application/octet-stream',size:f.size,data:String(r.result).split(',')[1]||''});r.onerror=()=>no(r.error);r.readAsDataURL(f)});
+const readFile=async f=>{if(!/^image\/(jpeg|png|webp)/.test(f.type)||f.size<800*1024)return rawRead(f);
+  try{const u=URL.createObjectURL(f);const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});URL.revokeObjectURL(u);
+    const k=Math.min(1,1800/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.82));if(!b||b.size>=f.size)return rawRead(f);
+    return rawRead(new File([b],f.name.replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'}))}catch(e){return rawRead(f)}};
 const fdate=iso=>iso?new Date(iso).toLocaleString():'-';
 const opts=(arr,sel,blank)=>(blank!==undefined?`<option value="">${blank}</option>`:'')+arr.map(([v,l])=>`<option value="${v}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`).join('');
 
@@ -211,8 +229,11 @@ function forcePin(name){
     const r=await fetch(BASE+'/api/me/pin',{method:'POST',headers:{'Content-Type':'application/json','X-Base-Path':BASE},body:JSON.stringify({pin:a})});
     const j=await r.json().catch(()=>({}));if(r.ok)location.reload();else $('#npe').textContent=j.error||'Could not save'};
 }
-function openFromHash(){const m=/^#t(\d+)$/.exec(location.hash);if(m){show('tickets');openTicket(+m[1]).catch(()=>{})}}
-window.addEventListener('hashchange',()=>{const m=/^#t(\d+)$/.exec(location.hash);if(m&&+m[1]!==S.sel)openFromHash()});
+function openFromHash(){const h=location.hash,m=/^#t(\d+)$/.exec(h);if(m){show('tickets');openTicket(+m[1]).catch(()=>{});return}
+  const clr=()=>history.replaceState(null,'',location.pathname+location.search);
+  if(h==='#mine'){S.view='agent:'+S.me;S.sel=null;show('tickets');clr()}
+  else if(h==='#new'){show('tickets');clr();setTimeout(()=>$('#newBtn').click(),60)}}
+window.addEventListener('hashchange',()=>{const h=location.hash,m=/^#t(\d+)$/.exec(h);if((m&&+m[1]!==S.sel)||h==='#new'||h==='#mine')openFromHash()});
 $('#nav').onclick=e=>{const b=e.target.closest('button');if(!b||!b.dataset.v)return;show(b.dataset.v)};
 const VIEWNAME={tasks:'Tasks',threads:'Team threads',reports:'Reports',dash:'Dashboard',kb:'Knowledge base',auto:'Automations',canned:'Canned replies',settings:'Settings'};
 const VIEWLBL={open:'All open',unassigned:'Unassigned',overdue:'Overdue / SLA breach',closed:'Resolved & closed',all:'All tickets'};
@@ -236,7 +257,7 @@ function show(v){setCrumb(v);document.body.dataset.view=v;
   ({tickets:()=>{loadSide();loadList()},dash:loadDash,tasks:()=>loadTasks(),threads:()=>loadThreads(),reports:()=>loadReports(),kb:loadKb,auto:loadAuto,canned:loadCanned,settings:loadSettings})[v]();
 }
 async function loadSide(){
-  const all=await api('/tickets?view=all');const open=all.filter(t=>t.status<4);
+  const all=await api('/tickets?view=all');const open=all.filter(t=>t.status<4);updateBadge(all,open);checkNew(all);saveSnap(open);
   const items=[['open','All open',open.length],['agent:'+S.me,'My open',open.filter(t=>t.responder_id===S.me).length],
    ['unassigned','Unassigned',open.filter(t=>!t.responder_id).length],['overdue','Overdue / SLA breach',all.filter(t=>t.overdue||t.fr_overdue).length],
    ['closed','Resolved & closed',all.filter(t=>t.status>=4).length],['all','All tickets',all.length]];
@@ -249,10 +270,10 @@ async function loadList(){
   const rows=await api('/tickets?view='+encodeURIComponent(S.view)+(q?'&q='+encodeURIComponent(q):''));
   $('#cnt').textContent=rows.length+(rows.length===1?' ticket':' tickets');
   $('#rows').innerHTML=rows.length?rows.map(t=>{const pv=(t.description||'').replace(/\s+/g,' ').trim().slice(0,70);
-    return `<div class="row ${S.sel===t.id?'on':''}" data-id="${t.id}">${avHtml(t.requester_name)}<div class="rb">
+    return `<div class="rw"><div class="swa">Assign to me</div><div class="swb">Resolve</div><div class="row ${S.sel===t.id?'on':''}" data-id="${t.id}">${avHtml(t.requester_name)}<div class="rb">
     <div class="r1"><span class="who">#${t.id} · ${esc(t.requester_name)}${t.requester_company?' '+esc(t.requester_company):''}</span>${slaPill(t)}</div>
     <div class="r2">${esc(t.subject)}</div>
-    <div class="r3">${SRC[t.source]||SRC.email}<em>${esc(pv||'(no message)')}</em>${t.priority>=3?`<span class="p${t.priority}">${PR[t.priority]}</span>`:''}${t.status!==2?`<span class="st${t.status}">${ST[t.status]}</span>`:''}</div></div></div>`}).join(''):'<div class="empty">No tickets</div>';
+    <div class="r3">${SRC[t.source]||SRC.email}<em>${esc(pv||'(no message)')}</em>${t.priority>=3?`<span class="p${t.priority}">${PR[t.priority]}</span>`:''}${t.status!==2?`<span class="st${t.status}">${ST[t.status]}</span>`:''}</div></div></div></div>`}).join(''):'<div class="empty">No tickets</div>';
   $('#rows').onclick=e=>{const r=e.target.closest('.row');if(r)openTicket(+r.dataset.id)};
 }
 async function openTicket(id){
@@ -284,7 +305,7 @@ async function openTicket(id){
   <div class="card"><div class="tabs"><button data-k="reply" class="${S.tab==='reply'?'on':''}">Reply</button><button data-k="note" class="${S.tab==='note'?'on':''}">Private note</button>
     <span class="sp"></span><select id="canSel" style="width:200px"><option value="">Insert canned reply…</option>${S.canned.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
     <textarea id="body" placeholder="Write a ${S.tab==='note'?'private note (not sent)':'reply to the customer'}…">${esc(S.draft||'')}</textarea>
-    <div style="margin-top:6px"><label class="btn sec" for="attIn" style="margin:0;display:inline-block">&#128206; Attach files</label><input type="file" id="attIn" multiple hidden><span id="attList"></span></div>
+    <div style="margin-top:6px"><label class="btn sec" for="attIn" style="margin:0;display:inline-block">&#128206; Attach files</label><input type="file" id="attIn" multiple hidden><label class="btn sec" for="camIn" style="margin:0 0 0 6px;display:inline-block">&#128247; Photo</label><input type="file" id="camIn" accept="image/*" capture="environment" hidden><span id="attList"></span></div>
     <div class="flex" style="margin-top:8px"><label style="margin:0">Then set status</label><select id="after" style="width:150px">${opts([['','(keep)'],...Object.entries(ST)],'')}</select>
     <span class="sp"></span><button class="btn" id="send">${S.tab==='note'?'Add note':'Send reply'}</button></div></div>
   ${(t.emails&&t.emails.length)?`<details class="card"><summary>Emails sent about this ticket (${t.emails.length})</summary>${t.emails.map(m=>`<div style="font-size:12px;color:var(--mut);margin-top:6px">${fdate(m.created_at)} — ${esc(m.event)} to <b>${esc(m.to_addr)}</b>: <span style="color:${m.status==='sent'?'#16a34a':'var(--red)'}">${esc(m.status)}</span></div>`).join('')}</details>`:''}
@@ -321,6 +342,7 @@ async function openTicket(id){
       if(f.size>10*1048576){toast(f.name+' is bigger than 10 MB',true);continue}
       if(S.pending.length>=5){toast('At most 5 files per message',true);break}
       S.pending.push(await readFile(f))}e.target.value='';drawAtt()};
+  $('#camIn').onchange=$('#attIn').onchange;
   $('#send').onclick=async()=>{const body=$('#body').value.trim();if(!body)return toast('Write something first',true);
     const r=await api('/tickets/'+id+'/reply','POST',{kind:S.tab,body,agent_id:S.me,status:$('#after').value||null,attachments:(S.pending||[]).map(f=>({name:f.name,type:f.type,data:f.data}))});
     S.draft='';S.pending=[];toast(S.tab==='note'?'Note added':'Reply saved — '+(r.delivery||''));await openTicket(id);loadList();loadSide()};
@@ -678,4 +700,34 @@ setInterval(()=>{if($('#v-tickets').classList.contains('on')){loadSide();loadLis
  const o=window.show;window.show=function(v){o(v);syncActive()};
  const au=$('#moreAuto');const chk=setInterval(()=>{if(S.me){clearInterval(chk);if(S.role!=='admin')au.style.display='none'}},300);
 })();
+
+function updateBadge(all,open){const ov=new Set(all.filter(t=>t.status<4&&(t.overdue||t.fr_overdue)).map(t=>t.id));
+  const un=open.filter(t=>!t.responder_id&&!ov.has(t.id)),n=ov.size+un.length,b=$('#tkBadge');
+  b.textContent=n>99?'99+':n;b.classList.toggle('on',n>0);b.classList.toggle('amb',!ov.size)}
+function saveSnap(open){const N=window.HelpdeskNative;if(N&&N.saveSnapshot)try{N.saveSnapshot(JSON.stringify(open.slice(0,30).map(t=>[t.id,t.subject,t.requester_name,t.status,t.priority])))}catch(e){}}
+function checkNew(all){try{const key='hd_seen_'+S.me,max=all.reduce((m,t)=>Math.max(m,t.id),0),raw=localStorage.getItem(key);
+  if(raw===null){localStorage.setItem(key,max);return}
+  const seen=+raw,fresh=all.filter(t=>t.id>seen&&t.status<4).sort((a,b)=>b.id-a.id);
+  if(!fresh.length){if(max>seen)localStorage.setItem(key,max);return}
+  S.fresh=fresh;S.freshMax=max;const n=fresh.length,t=fresh[0];
+  $('#nbText').textContent=n===1?'New ticket #'+t.id+': '+t.subject:n+' new tickets \u2014 latest: '+t.subject;$('#newBanner').style.display='flex';
+  const N=window.HelpdeskNative;if(N&&N.notify&&S.notified!==max){S.notified=max;N.notify(n===1?'New ticket #'+t.id:n+' new tickets',t.subject)}}catch(e){}}
+function ackNew(){try{localStorage.setItem('hd_seen_'+S.me,S.freshMax||0)}catch(e){}$('#newBanner').style.display='none'}
+async function refreshBadges(){const all=await api('/tickets?view=all');updateBadge(all,all.filter(t=>t.status<4));checkNew(all);saveSnap(all.filter(t=>t.status<4))}
+$('#nbX').onclick=e=>{e.stopPropagation();ackNew()};
+$('#newBanner').onclick=()=>{const f=S.fresh||[];ackNew();if(f.length===1){show('tickets');openTicket(f[0].id).catch(()=>{})}else{S.view='open';S.sel=null;show('tickets')}};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me)refreshBadges().catch(()=>{})});
+setInterval(()=>{if(!document.hidden&&S.me)refreshBadges().catch(()=>{})},60000);
+(function(){const list=$('#list'),ptr=$('#ptr');let st=null;
+ list.addEventListener('touchstart',e=>{if(e.touches.length!==1){st=null;return}const t=e.touches[0];st={x:t.clientX,y:t.clientY,row:e.target.closest('.row'),axis:null,dx:0,dy:0}},{passive:true});
+ list.addEventListener('touchmove',e=>{if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+  if(!st.axis){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;st.axis=Math.abs(dx)>Math.abs(dy)*1.4?'x':'y'}
+  if(st.axis==='x'&&st.row){st.row.classList.add('drag');st.dx=Math.max(-170,Math.min(170,dx));st.row.style.transform='translateX('+st.dx+'px)'}
+  else if(st.axis==='y'&&dy>0&&list.scrollTop<=0){st.dy=Math.min(dy,120);ptr.style.height=(st.dy*.5)+'px';ptr.textContent=st.dy>=90?'Release to refresh':'Pull to refresh'}},{passive:true});
+ const end=async()=>{const s=st;st=null;if(!s)return;
+  if(s.axis==='x'&&s.row){const r=s.row,id=+r.dataset.id,dx=s.dx;r.classList.remove('drag');r.style.transform='';
+   if(Math.abs(dx)>=100){try{await api('/tickets/'+id,'PATCH',dx>0?{responder_id:S.me}:{status:4});toast(dx>0?'Assigned to you':'Ticket resolved')}catch(e){}loadList().catch(()=>{});refreshBadges().catch(()=>{})}}
+  else if(s.axis==='y'&&s.dy>=90){ptr.textContent='Refreshing\u2026';try{await Promise.all([loadList(),refreshBadges()])}catch(e){}ptr.style.height='0'}
+  else ptr.style.height='0'};
+ list.addEventListener('touchend',end);list.addEventListener('touchcancel',end)})();
 </script></body></html>

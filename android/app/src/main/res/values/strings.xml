@@ -3,8 +3,13 @@
     <string name="app_name">Helpdesk</string>
     <string name="change_address">Change server address</string>
     <string name="address_hint">The web address of your helpdesk, for example https://your-pc.your-tailnet.ts.net/Helpdesk/</string>
-    <string name="cant_reach">Can\'t reach the helpdesk.\nCheck your internet connection and that the helpdesk is running on the PC.</string>
+    <string name="cant_reach_title">Can\'t reach the helpdesk</string>
+    <string name="cant_reach">Check your internet connection and that the helpdesk is running on the PC.</string>
     <string name="retry">Try again</string>
     <string name="downloading">Downloading…</string>
     <string name="no_app">No app found to open this link</string>
+    <string name="shortcut_new">New ticket</string>
+    <string name="shortcut_new_long">Create a new ticket</string>
+    <string name="shortcut_mine">My open tickets</string>
+    <string name="shortcut_mine_long">Show my open tickets</string>
 </resources>

@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
-        android:shortcutId="change_address"
+        android:shortcutId="new_ticket"
         android:enabled="true"
         android:icon="@mipmap/ic_launcher"
-        android:shortcutShortLabel="@string/change_address">
+        android:shortcutShortLabel="@string/shortcut_new"
+        android:shortcutLongLabel="@string/shortcut_new_long">
         <intent
-            android:action="za.helpdesk.app.CHANGE_ADDRESS"
+            android:action="za.helpdesk.app.NEW_TICKET"
+            android:targetClass="za.helpdesk.app.MainActivity"
+            android:targetPackage="za.helpdesk.app" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="my_tickets"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_mine"
+        android:shortcutLongLabel="@string/shortcut_mine_long">
+        <intent
+            android:action="za.helpdesk.app.MY_TICKETS"
             android:targetClass="za.helpdesk.app.MainActivity"
             android:targetPackage="za.helpdesk.app" />
     </shortcut>
