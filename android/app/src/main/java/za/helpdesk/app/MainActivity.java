@@ -37,7 +37,7 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final String DEFAULT_URL = "https://desktop-obtdcvt.tail973ab1.ts.net/Helpdesk/";
+    private static final String DEFAULT_URL = "http://192.168.101.245:8765/";
     private static final String ACTION_CHANGE_ADDRESS = "za.helpdesk.app.CHANGE_ADDRESS";
 
     private SharedPreferences prefs;
