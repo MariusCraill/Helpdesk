@@ -37,7 +37,7 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final String DEFAULT_URL = "http://192.168.101.245:8765/";
+    private static final String DEFAULT_URL = "https://desktop-obtdcvt.tail973ab1.ts.net/Helpdesk/";
     private static final String ACTION_CHANGE_ADDRESS = "za.helpdesk.app.CHANGE_ADDRESS";
 
     private SharedPreferences prefs;
@@ -79,6 +79,12 @@ public class MainActivity extends AppCompatActivity {
             @android.webkit.JavascriptInterface
             public void changeServer() {
                 runOnUiThread(MainActivity.this::askAddress);
+            }
+
+            @android.webkit.JavascriptInterface
+            public void setRole(String role) {
+                prefs.edit().putBoolean("admin", "admin".equals(role)).apply();
+                runOnUiThread(() -> findViewById(R.id.change).setVisibility(isAdmin() ? View.VISIBLE : View.GONE));
             }
         }, "HelpdeskNative");
 
@@ -143,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
             web.loadUrl(serverUrl());
         });
         findViewById(R.id.change).setOnClickListener(v -> askAddress());
+        findViewById(R.id.change).setVisibility(isAdmin() ? View.VISIBLE : View.GONE);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -219,7 +226,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isAdmin() {
+        return prefs.getBoolean("admin", false);
+    }
+
     private void askAddress() {
+        if (!isAdmin()) {
+            Toast.makeText(this, "Only an administrator can change the server address", Toast.LENGTH_LONG).show();
+            return;
+        }
         final EditText input = new EditText(this);
         input.setSingleLine(true);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);

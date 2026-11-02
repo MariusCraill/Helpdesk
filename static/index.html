@@ -190,7 +190,7 @@ const fdate=iso=>iso?new Date(iso).toLocaleString():'-';
 const opts=(arr,sel,blank)=>(blank!==undefined?`<option value="">${blank}</option>`:'')+arr.map(([v,l])=>`<option value="${v}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`).join('');
 
 async function boot(){
-  const me=await api('/me');S.me=me.id;S.role=me.role;S.meName=me.name;S.publicUrl=me.public_url||'';
+  const me=await api('/me');S.me=me.id;S.role=me.role;S.meName=me.name;if(window.syncServerBtn)window.syncServerBtn();S.publicUrl=me.public_url||'';
   if(me.must_change){forcePin(me.name);return}
   [S.agents,S.groups,S.canned]=await Promise.all([api('/agents'),api('/groups'),api('/canned')]);
   $('#meName').textContent=me.name+(me.role==='admin'?' (admin)':'');
@@ -673,7 +673,7 @@ setInterval(()=>{if($('#v-tickets').classList.contains('on')){loadSide();loadLis
  $('#moreRefresh').onclick=()=>location.reload();
  $('#morePortal').onclick=()=>window.open(BASE+'/portal','_blank');
  $('#moreOut').onclick=()=>$('#logout').click();
- if(App&&App.changeServer){const b=$('#moreServer');b.style.display='block';b.onclick=()=>App.changeServer()}
+ if(App&&App.changeServer){$('#moreServer').onclick=()=>App.changeServer();window.syncServerBtn=()=>{if(App.setRole)App.setRole(S.role);$('#moreServer').style.display=S.role==='admin'?'block':'none'}}
  const syncActive=()=>{const v=document.body.dataset.view,m=['reports','kb','auto','canned','settings'].includes(v);$('#moreBtn').classList.toggle('on',m)};
  const o=window.show;window.show=function(v){o(v);syncActive()};
  const au=$('#moreAuto');const chk=setInterval(()=>{if(S.me){clearInterval(chk);if(S.role!=='admin')au.style.display='none'}},300);
