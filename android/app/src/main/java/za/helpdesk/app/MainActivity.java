@@ -74,6 +74,14 @@ public class MainActivity extends AppCompatActivity {
         s.setUserAgentString(s.getUserAgentString() + " HelpdeskApp/1.0");
         CookieManager.getInstance().setAcceptCookie(true);
 
+        // Lets the page's More menu offer "Server address" (only exists inside this app).
+        web.addJavascriptInterface(new Object() {
+            @android.webkit.JavascriptInterface
+            public void changeServer() {
+                runOnUiThread(MainActivity.this::askAddress);
+            }
+        }, "HelpdeskNative");
+
         web.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) ->
                 download(url, contentDisposition, mimeType));
 
@@ -223,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, (d, w) -> {
                     String s = input.getText().toString().trim();
                     if (s.isEmpty()) return;
-                    if (!s.startsWith("http")) s = "https://" + s;
+                    if (!s.startsWith("http")) s = (s.matches("^[0-9.]+(:[0-9]+)?(/.*)?$") ? "http://" : "https://") + s;
                     if (!s.endsWith("/")) s = s + "/";
                     prefs.edit().putString("url", s).apply();
                     errorView.setVisibility(View.GONE);
@@ -235,7 +243,9 @@ public class MainActivity extends AppCompatActivity {
 
     /** Back closes an open pop-up or ticket first, then goes back in history, then leaves the app. */
     private void goBackInApp() {
-        String js = "(function(){var m=document.getElementById('modal');"
+        String js = "(function(){var mw=document.getElementById('moreWrap');"
+                + "if(mw&&mw.classList.contains('on')){mw.classList.remove('on');return 'x';}"
+                + "var m=document.getElementById('modal');"
                 + "if(m&&m.classList.contains('on')){closeModal();return 'x';}"
                 + "var p=document.getElementById('v-tickets');var b=document.getElementById('backBtn');"
                 + "if(p&&b&&p.dataset.pane==='detail'&&b.offsetParent!==null){b.click();return 'x';}"
